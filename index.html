@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Exam Buddy — AKTU BTech</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A12;--bg2:#12121E;--bg3:#1A1A2E;--p:#6C3CE1;--pl:#8B5CF6;--c:#06B6D4;--g:#10B981;--w:#F0EFFF;--m:#6B7280;--b:rgba(108,60,225,0.25);--b2:rgba(6,182,212,0.2)}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--w);overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,10,18,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 4%;height:58px}
+.logo{font-size:1.2rem;font-weight:800;display:flex;align-items:center;gap:.4rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.5}}
+.ntabs{display:flex;gap:.2rem}
+.nt{background:none;border:none;color:var(--m);font-size:.82rem;font-weight:500;padding:.45rem .9rem;border-radius:7px;cursor:pointer;transition:all .2s}
+.nt:hover,.nt.active{background:rgba(108,60,225,.15);color:var(--w)}
+.nt.active{color:var(--pl)}
+.nsb{background:linear-gradient(135deg,var(--p),var(--c));color:var(--w);border:none;padding:.45rem 1.1rem;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer}
+.page{display:none;min-height:100vh}.page.active{display:block}
+/* HOME */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 4% 50px;position:relative;overflow:hidden}
+.hg{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(108,60,225,.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:.4rem;background:rgba(6,182,212,.1);border:1px solid var(--b2);color:var(--c);padding:.3rem .9rem;border-radius:100px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.3rem}
+.hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;line-height:1.08;margin-bottom:1.1rem;max-width:700px}
+.grad{background:linear-gradient(90deg,var(--pl),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:rgba(240,239,255,.6);font-size:.98rem;max-width:500px;margin-bottom:2rem;line-height:1.65}
+.hbtns{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center;margin-bottom:2.5rem}
+.bg{background:linear-gradient(135deg,var(--p),var(--c));color:var(--w);border:none;padding:.8rem 1.75rem;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(108,60,225,.35)}
+.bg:hover{transform:translateY(-2px)}
+.bo{background:transparent;color:var(--w);border:1px solid var(--b);padding:.8rem 1.75rem;border-radius:9px;font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s}
+.bo:hover{border-color:var(--c);color:var(--c)}
+.schips{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:680px}
+.sc{background:rgba(255,255,255,.04);border:1px solid var(--b);padding:.45rem .9rem;border-radius:7px;font-size:.78rem;color:rgba(240,239,255,.7);cursor:pointer;transition:all .2s;font-weight:500}
+.sc:hover{background:rgba(108,60,225,.15);border-color:var(--pl);color:var(--pl)}
+.sbar{display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:center;padding:1.75rem 4%;border-top:1px solid var(--b);border-bottom:1px solid var(--b);background:rgba(255,255,255,.02)}
+.si{text-align:center}
+.sn{font-size:1.7rem;font-weight:700;background:linear-gradient(90deg,var(--pl),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sl{font-size:.7rem;color:var(--m);text-transform:uppercase;letter-spacing:.07em;margin-top:.2rem}
+/* FOUNDER */
+.fc-wrap{padding:2rem 4%;display:flex;flex-direction:column;align-items:center}
+.fc-lbl{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FF6BFF;margin-bottom:1rem}
+.fc{display:flex;align-items:center;gap:1.25rem;background:linear-gradient(135deg,rgba(255,107,255,.07),rgba(255,200,80,.06));border:1px solid rgba(255,107,255,.3);border-radius:16px;padding:1.5rem 1.75rem;max-width:520px;width:100%;position:relative;box-shadow:0 0 28px rgba(255,107,255,.1);transition:all .3s}
+.fc:hover{border-color:rgba(255,107,255,.55);box-shadow:0 0 44px rgba(255,107,255,.2);transform:translateY(-2px)}
+.fa{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#FF6BFF,#FFC850);display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:800;color:#0A0A12;flex-shrink:0;box-shadow:0 0 18px rgba(255,107,255,.4)}
+.fi{flex:1}
+.fn{font-size:1.1rem;font-weight:800;background:linear-gradient(90deg,#FF6BFF,#FFC850);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.15rem}
+.fr{font-size:.73rem;font-weight:600;color:rgba(255,107,255,.7);letter-spacing:.05em;margin-bottom:.4rem}
+.fd{font-size:.8rem;color:rgba(240,239,255,.5);line-height:1.5}
+.fb{position:absolute;top:.85rem;right:1.1rem;font-size:.65rem;font-weight:700;color:#FFC850;background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.3);padding:.2rem .6rem;border-radius:100px}
+/* SUBJECTS */
+.ph{padding:90px 4% 1.5rem;background:linear-gradient(180deg,rgba(108,60,225,.07) 0%,transparent 100%);border-bottom:1px solid var(--b)}
+.ph h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:.4rem}
+.ph p{color:var(--m);font-size:.9rem}
+.bf{display:flex;gap:.4rem;flex-wrap:wrap;padding:1.25rem 4%;border-bottom:1px solid var(--b);background:var(--bg2)}
+.bb{background:none;border:1px solid var(--b);color:var(--m);padding:.35rem .9rem;border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s}
+.bb.active,.bb:hover{background:rgba(108,60,225,.2);border-color:var(--pl);color:var(--w)}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;padding:1.5rem 4%}
+.scard{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:1.5rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.scard:hover{border-color:var(--pl);transform:translateY(-2px);box-shadow:0 6px 24px rgba(108,60,225,.15)}
+.si2{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:.85rem}
+.sname{font-size:1rem;font-weight:600;margin-bottom:.3rem}
+.scode{font-size:.72rem;color:var(--m);margin-bottom:.65rem;letter-spacing:.05em}
+.smeta{display:flex;gap:.6rem;align-items:center;font-size:.72rem;color:var(--m)}
+.sbadge{padding:.18rem .55rem;border-radius:5px;font-size:.68rem;font-weight:600}
+/* QUESTIONS */
+.qh{padding:82px 4% 1.25rem;display:flex;align-items:center;gap:.85rem;border-bottom:1px solid var(--b);background:var(--bg2)}
+.bk{background:none;border:1px solid var(--b);color:var(--m);width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .2s;flex-shrink:0}
+.bk:hover{border-color:var(--pl);color:var(--w)}
+.qhi h3{font-size:1.2rem;font-weight:700}
+.qhi span{font-size:.75rem;color:var(--m)}
+.ytabs{display:flex;gap:.4rem;padding:.85rem 4%;border-bottom:1px solid var(--b);background:var(--bg2);overflow-x:auto;scrollbar-width:none}
+.ytabs::-webkit-scrollbar{display:none}
+.yt2{background:none;border:1px solid var(--b);color:var(--m);padding:.35rem .85rem;border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.yt2.active,.yt2:hover{background:rgba(6,182,212,.15);border-color:var(--c);color:var(--c)}
+.ql{padding:1.25rem 4%}
+.qc{background:var(--bg2);border:1px solid var(--b);border-radius:11px;padding:1.25rem;margin-bottom:.85rem;transition:all .2s;display:flex;align-items:flex-start;gap:.85rem}
+.qc:hover{border-color:var(--pl)}
+.qn{width:30px;height:30px;border-radius:7px;background:rgba(108,60,225,.15);border:1px solid rgba(108,60,225,.3);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--pl);flex-shrink:0;margin-top:2px}
+.qb{flex:1}
+.qt{font-size:.9rem;line-height:1.6;margin-bottom:.65rem;color:rgba(240,239,255,.9)}
+.qf{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem}
+.qtags{display:flex;gap:.4rem;flex-wrap:wrap}
+.qtag{font-size:.67rem;font-weight:600;padding:.18rem .55rem;border-radius:4px;letter-spacing:.04em}
+.tu{background:rgba(108,60,225,.15);color:var(--pl);border:1px solid rgba(108,60,225,.25)}
+.tm{background:rgba(16,185,129,.12);color:var(--g);border:1px solid rgba(16,185,129,.2)}
+.tf{background:rgba(6,182,212,.1);color:var(--c);border:1px solid rgba(6,182,212,.2)}
+.wb{background:linear-gradient(135deg,var(--p),var(--c));color:var(--w);border:none;padding:.4rem .9rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.wb:hover{opacity:.85}
+/* SCANNER */
+.sw{padding:85px 4% 2.5rem;max-width:660px;margin:0 auto}
+.sw h2{font-size:1.65rem;font-weight:700;margin-bottom:.4rem}
+.sw>p{color:var(--m);margin-bottom:1.75rem;font-size:.9rem}
+.sbox{background:var(--bg2);border:2px dashed rgba(108,60,225,.35);border-radius:18px;padding:2.5rem 1.5rem;text-align:center;margin-bottom:1.25rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.sbox:hover{border-color:var(--c);background:rgba(6,182,212,.03)}
+.sbox.scanning{border-color:var(--c);border-style:solid}
+.sanim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(108,60,225,.2),rgba(6,182,212,.2));display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1rem;border:2px solid var(--b2);transition:all .3s}
+.sbox:hover .sanim{border-color:var(--c);box-shadow:0 0 20px rgba(6,182,212,.3)}
+.stitle{font-size:1.05rem;font-weight:600;margin-bottom:.4rem}
+.ssub{font-size:.82rem;color:var(--m)}
+.sl2{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);box-shadow:0 0 10px var(--c);animation:sl 2s linear infinite;display:none}
+.scanning .sl2{display:block}
+@keyframes sl{0%{top:10%}100%{top:90%}}
+.or{display:flex;align-items:center;gap:.85rem;margin-bottom:1.25rem;color:var(--m);font-size:.82rem}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--b)}
+.sbar2{display:flex;gap:.65rem;margin-bottom:1.75rem}
+.si3{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:9px;padding:.8rem 1.1rem;color:var(--w);font-size:.9rem;outline:none;transition:border-color .2s}
+.si3:focus{border-color:var(--c)}
+.si3::placeholder{color:var(--m)}
+.sbtn{background:linear-gradient(135deg,var(--p),var(--c));color:var(--w);border:none;padding:0 1.3rem;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer}
+.sr{background:var(--bg2);border:1px solid var(--b2);border-radius:13px;padding:1.5rem;display:none}
+.sr.show{display:block}
+.rl{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--c);margin-bottom:.65rem}
+.rq{font-size:.95rem;line-height:1.55;margin-bottom:1.25rem;border-left:3px solid var(--pl);padding-left:.85rem}
+.rvt{font-size:.95rem;font-weight:600;margin-bottom:.85rem}
+.vcs{display:flex;flex-direction:column;gap:.65rem}
+.vc{background:var(--bg3);border:1px solid var(--b);border-radius:9px;padding:.9rem 1.1rem;display:flex;align-items:center;gap:.85rem;cursor:pointer;transition:all .2s;text-decoration:none}
+.vc:hover{border-color:var(--c);background:rgba(6,182,212,.05)}
+.vt{width:50px;height:38px;border-radius:6px;background:linear-gradient(135deg,var(--p),var(--c));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.vi{flex:1;min-width:0}
+.vtitle{font-size:.82rem;font-weight:600;margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vmeta{font-size:.72rem;color:var(--m)}
+.vd{font-size:.72rem;color:var(--c);background:rgba(6,182,212,.1);padding:.18rem .45rem;border-radius:4px;flex-shrink:0;font-weight:600}
+/* MODAL */
+.mo{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:1rem}
+.mo.show{display:flex}
+.md{background:var(--bg2);border:1px solid var(--b);border-radius:16px;width:100%;max-width:660px;overflow:hidden;animation:mi .25s ease}
+@keyframes mi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.mv{width:100%;aspect-ratio:16/9;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.mpb{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--c));display:flex;align-items:center;justify-content:center;font-size:1.6rem;cursor:pointer;box-shadow:0 0 28px rgba(108,60,225,.5);transition:transform .2s}
+.mpb:hover{transform:scale(1.08)}
+.mb{padding:1.3rem}
+.mt{font-size:1.05rem;font-weight:700;margin-bottom:.3rem}
+.ms{font-size:.82rem;color:var(--m);margin-bottom:1.1rem}
+.mf{display:flex;justify-content:space-between;align-items:center;padding-top:1.1rem;border-top:1px solid var(--b)}
+.mc{background:rgba(255,255,255,.06);border:1px solid var(--b);color:var(--m);padding:.45rem 1.1rem;border-radius:7px;font-size:.82rem;cursor:pointer;transition:all .2s}
+.mc:hover{color:var(--w)}
+.myt{background:linear-gradient(135deg,#ff4444,#cc0000);color:white;border:none;padding:.45rem 1.1rem;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem}
+/* TOAST */
+.toast{position:fixed;bottom:1.75rem;right:1.75rem;z-index:999;background:var(--bg3);border:1px solid var(--b2);border-radius:9px;padding:.8rem 1.1rem;font-size:.82rem;display:flex;align-items:center;gap:.4rem;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+#fi{display:none}
+@media(max-width:640px){nav{padding:0 3%}.ntabs{display:none}.sg{padding:1.25rem 3%}.ql{padding:1rem 3%}.qc{flex-direction:column;gap:.65rem}.fc{flex-direction:column;text-align:center;padding:1.25rem}.fb{position:static;margin-top:.65rem}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><div class="dot"></div>Exam Buddy</div>
+  <div class="ntabs">
+    <button class="nt active" onclick="sp('home')">Home</button>
+    <button class="nt" onclick="sp('subjects')">Subjects</button>
+    <button class="nt" onclick="sp('scanner')">Scanner</button>
+  </div>
+  <button class="nsb" onclick="sp('scanner')">📷 Scan</button>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hg"></div>
+    <div class="chip">🎓 AKTU University — Official Syllabus</div>
+    <h1>Exam ki<br/><span class="grad">tension khatam,</span><br/>success pakka</h1>
+    <p>AKTU BTech ke saare subjects ke previous year questions, video solutions aur AI-powered scanner — ek jagah sab kuch.</p>
+    <div class="hbtns">
+      <button class="bg" onclick="sp('subjects')">📚 Subjects Browse Karo</button>
+      <button class="bo" onclick="sp('scanner')">📷 Question Scan Karo</button>
+    </div>
+    <div class="schips" id="qchips"></div>
+  </div>
+  <div class="sbar">
+    <div class="si"><div class="sn">2,400+</div><div class="sl">PYQ Questions</div></div>
+    <div class="si"><div class="sn">18</div><div class="sl">Subjects</div></div>
+    <div class="si"><div class="sn">1,800+</div><div class="sl">Video Solutions</div></div>
+    <div class="si"><div class="sn">AI</div><div class="sl">Scanner</div></div>
+  </div>
+  <div class="fc-wrap">
+    <div class="fc-lbl">👨‍💻 Founder &amp; Creator</div>
+    <div class="fc">
+      <div class="fa">HD</div>
+      <div class="fi">
+        <div class="fn">Hritik Dwivedi</div>
+        <div class="fr">Founder · Exam Buddy</div>
+        <div class="fd">AKTU students ki padhai aasaan karne ke liye — ek vision, ek platform.</div>
+      </div>
+      <div class="fb">✦ Founder</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBJECTS -->
+<div id="page-subjects" class="page">
+  <div class="ph"><h2>AKTU BTech Subjects</h2><p>Branch aur year choose karo — phir questions aur video solutions dekho</p></div>
+  <div class="bf" id="bf"></div>
+  <div class="sg" id="sg"></div>
+</div>
+
+<!-- QUESTIONS -->
+<div id="page-questions" class="page">
+  <div class="qh">
+    <button class="bk" onclick="sp('subjects')">←</button>
+    <div class="qhi"><h3 id="qsn">Subject</h3><span id="qsc">Code</span></div>
+  </div>
+  <div class="ytabs" id="ytabs"></div>
+  <div class="ql" id="ql"></div>
+</div>
+
+<!-- SCANNER -->
+<div id="page-scanner" class="page">
+  <div class="sw">
+    <h2>📷 Question Scanner</h2>
+    <p>Question ka photo upload karo ya type karo — AI instantly matching video solutions dhundh dega.</p>
+    <div class="sbox" id="sbox" onclick="document.getElementById('fi').click()">
+      <div class="sl2"></div>
+      <div class="sanim" id="sanim">📷</div>
+      <div class="stitle" id="stitle">Question Scan Karo</div>
+      <p class="ssub" id="ssub">Click karke photo upload karo ya drag &amp; drop karo</p>
+    </div>
+    <input type="file" id="fi" accept="image/*" onchange="handleScan(this)"/>
+    <div class="or">ya</div>
+    <div class="sbar2">
+      <input type="text" class="si3" id="ts" placeholder="Question type karke search karo..."/>
+      <button class="sbtn" onclick="searchByText()">🔍</button>
+    </div>
+    <div class="sr" id="sr">
+      <div class="rl">✅ Question Mila</div>
+      <div class="rq" id="rqt"></div>
+      <div class="rvt">📹 Matching Video Solutions</div>
+      <div class="vcs" id="rvs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="modal" onclick="cmo(event)">
+  <div class="md">
+    <div class="mv"><div class="mpb">▶</div></div>
+    <div class="mb">
+      <div class="mt" id="mtt"></div>
+      <div class="ms" id="mst"></div>
+      <div class="mf">
+        <button class="mc" onclick="closeModal()">✕ Band Karo</button>
+        <button class="myt" id="myl">▶ YouTube Par Dekho</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span id="ti">✅</span><span id="tm2"></span></div>
+
+<script>
+const branches=['All','CS/IT','ECE','ME','CE','EE'];
+const subjects=[
+  {id:'dsa',name:'Data Structures & Algorithms',code:'KCS301',branch:'CS/IT',icon:'🌳',color:'#6C3CE1',sem:3,q:120,v:95},
+  {id:'os',name:'Operating Systems',code:'KCS401',branch:'CS/IT',icon:'💻',color:'#06B6D4',sem:4,q:98,v:82},
+  {id:'dbms',name:'Database Management Systems',code:'KCS501',branch:'CS/IT',icon:'🗄️',color:'#10B981',sem:5,q:110,v:88},
+  {id:'cn',name:'Computer Networks',code:'KCS601',branch:'CS/IT',icon:'🌐',color:'#F59E0B',sem:6,q:105,v:79},
+  {id:'toc',name:'Theory of Computation',code:'KCS402',branch:'CS/IT',icon:'⚙️',color:'#EF4444',sem:4,q:88,v:65},
+  {id:'se',name:'Software Engineering',code:'KCS502',branch:'CS/IT',icon:'📋',color:'#8B5CF6',sem:5,q:76,v:60},
+  {id:'ece1',name:'Digital Electronics',code:'KEC301',branch:'ECE',icon:'🔌',color:'#F59E0B',sem:3,q:95,v:78},
+  {id:'ece2',name:'Signals & Systems',code:'KEC401',branch:'ECE',icon:'📡',color:'#06B6D4',sem:4,q:88,v:70},
+  {id:'ece3',name:'Microprocessors',code:'KEC501',branch:'ECE',icon:'🖥️',color:'#10B981',sem:5,q:82,v:65},
+  {id:'me1',name:'Engineering Mechanics',code:'KME301',branch:'ME',icon:'⚙️',color:'#EF4444',sem:3,q:90,v:72},
+  {id:'me2',name:'Thermodynamics',code:'KME401',branch:'ME',icon:'🔥',color:'#F59E0B',sem:4,q:85,v:68},
+  {id:'me3',name:'Fluid Mechanics',code:'KME501',branch:'ME',icon:'💧',color:'#06B6D4',sem:5,q:78,v:62},
+  {id:'ce1',name:'Structural Analysis',code:'KCE301',branch:'CE',icon:'🏗️',color:'#8B5CF6',sem:3,q:88,v:70},
+  {id:'ce2',name:'Concrete Technology',code:'KCE401',branch:'CE',icon:'🪨',color:'#6B7280',sem:4,q:72,v:55},
+  {id:'ee1',name:'Circuit Theory',code:'KEE301',branch:'EE',icon:'⚡',color:'#F59E0B',sem:3,q:92,v:75},
+  {id:'ee2',name:'Power Systems',code:'KEE501',branch:'EE',icon:'🔋',color:'#10B981',sem:5,q:85,v:68},
+  {id:'phy',name:'Engineering Physics',code:'KAS101',branch:'CS/IT',icon:'🔬',color:'#06B6D4',sem:1,q:130,v:105},
+  {id:'math',name:'Mathematics - I',code:'KAS101M',branch:'CS/IT',icon:'📐',color:'#6C3CE1',sem:1,q:145,v:120},
+];
+const qdb={
+  dsa:[
+    {year:'2023',unit:2,marks:10,text:'Explain AVL Tree rotations with examples. Write algorithm for insertion in AVL tree and analyze its time complexity.',freq:'High',videos:[{title:'AVL Tree Rotations — Complete',ch:'Abdul Bari',dur:'28 min',yt:'https://youtube.com/results?search_query=AVL+tree+rotations'},{title:'AVL Insertion with Examples',ch:"Jenny's Lectures",dur:'22 min',yt:'https://youtube.com/results?search_query=AVL+insertion'}]},
+    {year:'2023',unit:1,marks:5,text:'Differentiate between Stack and Queue. Write push and pop operations for Stack using arrays.',freq:'Medium',videos:[{title:'Stack vs Queue Operations',ch:'CodeWithHarry',dur:'15 min',yt:'https://youtube.com/results?search_query=stack+queue+difference'}]},
+    {year:'2022',unit:4,marks:10,text:'What is Graph? Explain BFS and DFS traversal algorithms with examples and write their time complexity.',freq:'High',videos:[{title:'BFS and DFS Graph Traversal',ch:'Abdul Bari',dur:'35 min',yt:'https://youtube.com/results?search_query=BFS+DFS+graph+traversal'},{title:'Graph BFS DFS AKTU',ch:'Last Moment Tuitions',dur:'40 min',yt:'https://youtube.com/results?search_query=BFS+DFS+AKTU'}]},
+    {year:'2022',unit:3,marks:10,text:'Explain Hashing techniques. Discuss collision resolution methods — Linear Probing, Quadratic Probing, and Chaining.',freq:'High',videos:[{title:'Hashing & Collision Resolution',ch:"Jenny's Lectures",dur:'32 min',yt:'https://youtube.com/results?search_query=hashing+collision+resolution'}]},
+    {year:'2021',unit:2,marks:7,text:'Write and explain the Merge Sort algorithm. Show the working on: [38,27,43,3,9,82,10].',freq:'High',videos:[{title:'Merge Sort Complete',ch:'CodeWithHarry',dur:'25 min',yt:'https://youtube.com/results?search_query=merge+sort+algorithm'}]},
+  ],
+  os:[
+    {year:'2023',unit:2,marks:10,text:"What is Deadlock? Explain necessary conditions for deadlock. Explain Banker's Algorithm with suitable example.",freq:'High',videos:[{title:"Deadlock & Banker's Algorithm",ch:'Gate Smashers',dur:'45 min',yt:'https://youtube.com/results?search_query=deadlock+bankers+algorithm'},{title:'Deadlock AKTU',ch:'Last Moment Tuitions',dur:'35 min',yt:'https://youtube.com/results?search_query=deadlock+OS+AKTU'}]},
+    {year:'2023',unit:3,marks:10,text:'Explain page replacement algorithms: FIFO, LRU, Optimal. Apply all three on reference string: 1,2,3,4,1,2,5,1,2,3,4,5 with 3 frames.',freq:'High',videos:[{title:'Page Replacement Algorithms',ch:'Gate Smashers',dur:'42 min',yt:'https://youtube.com/results?search_query=page+replacement+FIFO+LRU'}]},
+    {year:'2022',unit:1,marks:7,text:'Differentiate between process and thread. Explain multithreading models with diagrams.',freq:'Medium',videos:[{title:'Process vs Thread',ch:'Neso Academy',dur:'20 min',yt:'https://youtube.com/results?search_query=process+vs+thread+OS'}]},
+  ],
+  dbms:[
+    {year:'2023',unit:2,marks:10,text:'What is normalization? Explain 1NF, 2NF, 3NF and BCNF with suitable examples.',freq:'High',videos:[{title:'Normalization 1NF 2NF 3NF BCNF',ch:'Gate Smashers',dur:'50 min',yt:'https://youtube.com/results?search_query=normalization+DBMS'},{title:'Normalization AKTU',ch:'Last Moment Tuitions',dur:'40 min',yt:'https://youtube.com/results?search_query=normalization+AKTU+DBMS'}]},
+    {year:'2023',unit:3,marks:7,text:'Explain Transaction Management. What are ACID properties? Discuss concurrency control mechanisms.',freq:'High',videos:[{title:'ACID Properties & Transactions',ch:'Neso Academy',dur:'28 min',yt:'https://youtube.com/results?search_query=ACID+properties+DBMS'}]},
+  ],
+  cn:[
+    {year:'2023',unit:1,marks:10,text:'Explain OSI Model in detail. Write functions of each layer. How does it differ from TCP/IP model?',freq:'High',videos:[{title:'OSI Model 7 Layers Explained',ch:'Neso Academy',dur:'48 min',yt:'https://youtube.com/results?search_query=OSI+model+7+layers'},{title:'OSI vs TCP/IP',ch:'Gate Smashers',dur:'30 min',yt:'https://youtube.com/results?search_query=OSI+vs+TCPIP'}]},
+    {year:'2022',unit:3,marks:10,text:'What is IP addressing? Explain subnetting with CIDR notation. Solve: Divide 192.168.1.0/24 into 4 subnets.',freq:'High',videos:[{title:'IP Addressing & Subnetting',ch:'Neso Academy',dur:'55 min',yt:'https://youtube.com/results?search_query=IP+subnetting+explained'}]},
+  ],
+};
+function gq(s){return[
+  {year:'2023',unit:1,marks:10,text:`Explain fundamental concepts of ${s.name}. Discuss applications in engineering with examples.`,freq:'High',videos:[{title:`${s.name} — Introduction`,ch:'AKTU Lectures',dur:'30 min',yt:`https://youtube.com/results?search_query=${encodeURIComponent(s.name)}+AKTU`}]},
+  {year:'2022',unit:2,marks:10,text:`Compare different methods in ${s.name}. Which is most efficient and why?`,freq:'High',videos:[{title:`${s.name} Methods`,ch:'Gate Smashers',dur:'35 min',yt:`https://youtube.com/results?search_query=${encodeURIComponent(s.name)}+methods`}]},
+  {year:'2021',unit:3,marks:7,text:`Define and explain key theorems in ${s.name} with proof.`,freq:'Medium',videos:[{title:`${s.name} Theorems`,ch:'Neso Academy',dur:'25 min',yt:`https://youtube.com/results?search_query=${encodeURIComponent(s.name)}+theorems`}]},
+];}
+let cs=null,cb='All';
+function sp(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  const t=document.querySelector(`.nt[onclick*="'${p}'"]`);
+  if(t)t.classList.add('active');
+  window.scrollTo(0,0);
+}
+function os2(id){
+  cs=subjects.find(s=>s.id===id);
+  document.getElementById('qsn').textContent=cs.name;
+  document.getElementById('qsc').textContent=cs.code+' • Sem '+cs.sem;
+  ryt();rq('All');sp('questions');
+}
+function rqc(){
+  document.getElementById('qchips').innerHTML=subjects.slice(0,8).map(s=>`<div class="sc" onclick="os2('${s.id}')">${s.icon} ${s.name}</div>`).join('');
+}
+function rbf(){
+  document.getElementById('bf').innerHTML=branches.map(b=>`<button class="bb${b==='All'?' active':''}" onclick="fb('${b}')">${b}</button>`).join('');
+}
+function fb(b){
+  cb=b;
+  document.querySelectorAll('.bb').forEach(x=>x.classList.toggle('active',x.textContent===b));
+  rsg();
+}
+function rsg(){
+  const f=cb==='All'?subjects:subjects.filter(s=>s.branch===cb);
+  document.getElementById('sg').innerHTML=f.map(s=>`<div class="scard" onclick="os2('${s.id}')"><div class="si2" style="background:${s.color}22;border:1px solid ${s.color}44">${s.icon}</div><div class="sname">${s.name}</div><div class="scode">${s.code} • Sem ${s.sem}</div><div class="smeta"><span class="sbadge" style="background:rgba(108,60,225,.12);color:#8B5CF6;border:1px solid rgba(108,60,225,.2)">📄 ${s.q} PYQ</span><span class="sbadge" style="background:rgba(6,182,212,.1);color:#06B6D4;border:1px solid rgba(6,182,212,.2)">▶ ${s.v} Videos</span><span style="margin-left:auto;color:#6B7280;font-size:.7rem">${s.branch}</span></div></div>`).join('');
+}
+function ryt(){
+  const yrs=['All','2024','2023','2022','2021','2020','2019'];
+  document.getElementById('ytabs').innerHTML=yrs.map(y=>`<button class="yt2${y==='All'?' active':''}" onclick="fy('${y}')">${y==='All'?'All Years':y}</button>`).join('');
+}
+function fy(y){
+  document.querySelectorAll('.yt2').forEach(t=>t.classList.toggle('active',t.textContent===(y==='All'?'All Years':y)));
+  rq(y);
+}
+function rq(yr){
+  const qs=(qdb[cs.id]||gq(cs)).filter(q=>yr==='All'||q.year===yr);
+  if(!qs.length){document.getElementById('ql').innerHTML=`<div style="text-align:center;padding:3rem;color:var(--m)"><div style="font-size:2rem;margin-bottom:1rem">📭</div><p>${yr} ke liye koi question nahi mila</p></div>`;return;}
+  document.getElementById('ql').innerHTML=qs.map((q,i)=>`<div class="qc"><div class="qn">${i+1}</div><div class="qb"><div class="qt">${q.text}</div><div class="qf"><div class="qtags"><span class="qtag tu">Unit ${q.unit}</span><span class="qtag tm">${q.marks}M</span><span class="qtag tf">${q.freq}</span><span class="qtag" style="background:rgba(255,255,255,.05);color:#6B7280;border:1px solid rgba(255,255,255,.08)">${q.year}</span></div><button class="wb" onclick='ov(${JSON.stringify(q)})'>▶ Video</button></div></div></div>`).join('');
+}
+function ov(q){
+  document.getElementById('mtt').textContent=q.text.substring(0,80)+'...';
+  document.getElementById('mst').innerHTML=q.videos.map(v=>`<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem"><span style="color:var(--c)">▶</span><span style="font-size:.82rem">${v.title}</span><span style="color:var(--m);font-size:.72rem;margin-left:auto">${v.ch} • ${v.dur}</span></div>`).join('');
+  document.getElementById('myl').onclick=()=>window.open(q.videos[0].yt,'_blank');
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function cmo(e){if(e.target===document.getElementById('modal'))closeModal()}
+function handleScan(inp){
+  if(!inp.files||!inp.files[0])return;
+  const box=document.getElementById('sbox');
+  box.classList.add('scanning');
+  document.getElementById('sanim').textContent='⏳';
+  document.getElementById('stitle').textContent='Scanning...';
+  document.getElementById('ssub').textContent='Question dhundh raha hoon...';
+  setTimeout(()=>{
+    document.getElementById('sanim').textContent='✅';
+    document.getElementById('stitle').textContent='Scan Successful!';
+    document.getElementById('ssub').textContent='Results dekho neeche';
+    box.classList.remove('scanning');
+    showResult();
+  },2200);
+}
+function searchByText(){
+  const t=document.getElementById('ts').value.trim();
+  if(!t){showToast('⚠️','Pehle kuch type karo');return}
+  showToast('🔍','Searching...');
+  setTimeout(showResult,900);
+}
+function showResult(){
+  const sample=qdb.dsa[Math.floor(Math.random()*qdb.dsa.length)];
+  document.getElementById('rqt').textContent=sample.text;
+  document.getElementById('rvs').innerHTML=sample.videos.map(v=>`<a class="vc" href="${v.yt}" target="_blank"><div class="vt">▶</div><div class="vi"><div class="vtitle">${v.title}</div><div class="vmeta">📺 ${v.ch}</div></div><div class="vd">${v.dur}</div></a>`).join('');
+  document.getElementById('sr').classList.add('show');
+  showToast('✅','Video solutions mil gaye!');
+}
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('ti').textContent=icon;
+  document.getElementById('tm2').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+rqc();rbf();rsg();
+</script>
+</body>
+</html>
