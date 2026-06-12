@@ -19,4 +19,4 @@ HTML • CSS • JavaScript
 Conceptualized & Developed by **Hritik Dwivedi**
 
 ## Live Demo
-[exam-buddy link yahan daalo]
+https://github.com/dwivedihritik63-cloud/exam-buddy
