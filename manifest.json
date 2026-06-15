@@ -1,8 +1,9 @@
 {
-  "name": "Exam Buddy — AKTU",
+  "name": "Exam Buddy - AKTU",
   "short_name": "Exam Buddy",
   "description": "AKTU Previous Year Questions & Video Solutions",
-  "start_url": "/index.html",
+  "start_url": "/exam-buddy/",
+  "scope": "/exam-buddy/",
   "display": "standalone",
   "background_color": "#0A0A12",
   "theme_color": "#6C3CE1",
