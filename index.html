@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Exam Buddy — AKTU</title><style>
+<!DOCTYPE html><html lang="hi"><head><link rel="manifest" href="manifest.json">
+<script>
+  if('serviceWorker' in navigator)
+    navigator.serviceWorker.register('sw.js');
+</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Exam Buddy — AKTU</title><style>
 *{box-sizing:border-box;margin:0;padding:0}:root{--bg:#0A0A12;--bg2:#12121E;--p:#6C3CE1;--pl:#8B5CF6;--c:#06B6D4;--g:#10B981;--w:#F0EFFF;--m:#6B7280;--b:rgba(108,60,225,.25)}
 body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--w);overflow-x:hidden}
 nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(10,10,18,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 4%;height:54px}
