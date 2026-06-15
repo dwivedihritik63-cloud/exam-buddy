@@ -1,7 +1,11 @@
 const CACHE = 'exam-buddy-v1';
 const FILES = [
-  '/index.html',
-  '/manifest.json'
+  '/exam-buddy/',
+  '/exam-buddy/index.html',
+  '/exam-buddy/manifest.json',
+  '/exam-buddy/icon-192.png',
+  '/exam-buddy/icon-512.png',
+  '/exam-buddy/sw.js'
 ];
 
 self.addEventListener('install', e => {
