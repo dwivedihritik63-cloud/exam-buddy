@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Exam Buddy — AKTU Complete</title>
+
+<!-- ✅ PWA Install Support -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Exam Buddy">
+<meta name="theme-color" content="#6C3CE1">
+<meta name="application-name" content="Exam Buddy">
+<meta name="msapplication-TileColor" content="#6C3CE1">
+
+<!-- Inline SVG icon as data URI apple touch icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='28' fill='%236C3CE1'/%3E%3Ctext x='96' y='135' text-anchor='middle' font-size='110' font-family='system-ui'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+
+<!-- Inline manifest via JS -->
+<script>
+(function() {
+  // Build manifest as JSON and create blob URL
+  const icons = [
+    {
+      src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADAAQMAAABCs8ECAAAAA1BMVEVsPN3q6+0HAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAADklEQVRoge3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAeAMBcAABHgAAAABJRU5ErkJggg==",
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "any maskable"
+    },
+    {
+      src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADAAQMAAABCs8ECAAAAA1BMVEVsPN3q6+0HAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAADklEQVRoge3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAeAMBcAABHgAAAABJRU5ErkJggg==",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any maskable"
+    }
+  ];
+  
+  const manifest = {
+    name: "Exam Buddy — AKTU",
+    short_name: "Exam Buddy",
+    description: "AKTU BTech ke questions aur AI solutions",
+    start_url: "./",
+    scope: "./",
+    display: "standalone",
+    display_override: ["standalone", "minimal-ui"],
+    background_color: "#0A0A12",
+    theme_color: "#6C3CE1",
+    orientation: "portrait-primary",
+    categories: ["education"],
+    icons: icons,
+    screenshots: [],
+    prefer_related_applications: false
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestURL = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestURL;
+  document.head.appendChild(link);
+})();
+</script>
+
+<!-- ✅ Service Worker (required for install prompt) -->
+<script>
+if ('serviceWorker' in navigator) {
+  const swScript = `
+    const CACHE_NAME = 'exam-buddy-v2';
+    
+    self.addEventListener('install', function(e) {
+      console.log('SW: Installing...');
+      self.skipWaiting();
+    });
+    
+    self.addEventListener('activate', function(e) {
+      console.log('SW: Activated');
+      e.waitUntil(clients.claim());
+    });
+    
+    self.addEventListener('fetch', function(e) {
+      // Don't intercept API calls
+      if (e.request.url.includes('anthropic.com') || 
+          e.request.url.includes('cdnjs.cloudflare.com') ||
+          e.request.url.includes('fonts.googleapis.com')) {
+        return;
+      }
+      e.respondWith(
+        fetch(e.request).catch(function() {
+          return caches.match(e.request);
+        })
+      );
+    });
+  `;
+  
+  const swBlob = new Blob([swScript], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(swBlob);
+  
+  navigator.serviceWorker.register(swURL, { scope: './' })
+    .then(function(reg) {
+      console.log('SW registered:', reg.scope);
+      
+      // Listen for beforeinstallprompt — show install button
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window._deferredInstall = e;
+        const btn = document.getElementById('install-app-btn');
+        if (btn) btn.style.display = 'flex';
+      });
+      
+      window.addEventListener('appinstalled', function() {
+        const btn = document.getElementById('install-app-btn');
+        if (btn) btn.style.display = 'none';
+        window._deferredInstall = null;
+      });
+    })
+    .catch(function(err) {
+      console.log('SW error:', err);
+    });
+}
+
+function installApp() {
+  if (window._deferredInstall) {
+    window._deferredInstall.prompt();
+    window._deferredInstall.userChoice.then(function(choice) {
+      if (choice.outcome === 'accepted') {
+        console.log('App installed!');
+      }
+      window._deferredInstall = null;
+    });
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A12;--bg2:#12121E;--bg3:#1A1A2E;
+  --p:#6C3CE1;--pl:#8B5CF6;--c:#06B6D4;--g:#10B981;
+  --w:#F0EFFF;--m:#6B7280;--b:rgba(108,60,225,.25);
+  --red:#EF4444;--yellow:#F59E0B;--pink:#FF6BFF;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--w);overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,10,18,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 4%;height:54px}
+.logo{font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:.5rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.nav-user{font-size:.75rem;color:var(--m);background:var(--bg3);border:1px solid var(--b);padding:.3rem .7rem;border-radius:6px}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,10,18,.98);border-top:1px solid var(--b);display:flex;justify-content:space-around;padding:.4rem 0 .85rem}
+.bn{background:none;border:none;color:var(--m);display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.62rem;font-weight:600;cursor:pointer;padding:.3rem .7rem;transition:color .2s;position:relative}
+.bn.a{color:var(--pl)}.bn span{font-size:1.25rem}
+.bn-badge{position:absolute;top:0;right:.3rem;background:var(--red);color:#fff;font-size:.5rem;font-weight:700;padding:.1rem .3rem;border-radius:100px;min-width:14px;text-align:center}
+
+/* PAGES */
+.pg{display:none;min-height:100vh;padding-bottom:5.5rem}.pg.a{display:block}
+
+/* ── LOGIN ───────────────────────────── */
+.lp{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.2rem}
+.lp.hide{display:none}
+.lcard{background:var(--bg2);border:1px solid var(--b);border-radius:20px;padding:2rem 1.75rem;width:100%;max-width:380px}
+.llogo{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.2rem;justify-content:center;margin-bottom:.3rem}
+.lsub{text-align:center;color:var(--m);font-size:.8rem;margin-bottom:1.6rem}
+.lstep{display:none}.lstep.a{display:block}
+.llbl{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--m);margin-bottom:.5rem}
+.lphinp{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--b);border-radius:10px;overflow:hidden}
+.lcc{padding:.7rem .85rem;font-size:.85rem;color:var(--m);border-right:1px solid var(--b)}
+.lphinp input{flex:1;background:transparent;border:none;color:var(--w);padding:.7rem .85rem;font-size:.95rem;outline:none}
+.lbtn{width:100%;background:linear-gradient(135deg,var(--p),var(--c));color:#fff;border:none;padding:.85rem;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;margin-top:.9rem}
+.lbtn:disabled{opacity:.4;cursor:not-allowed}
+.lotprow{display:flex;gap:.5rem;justify-content:center;margin:.2rem 0 .4rem}
+.lotprow input{width:44px;height:50px;background:var(--bg3);border:1.5px solid var(--b);border-radius:9px;color:var(--w);font-size:1.35rem;font-weight:700;text-align:center;outline:none;transition:border-color .2s}
+.lotprow input:focus{border-color:var(--pl)}
+.lotprow input.filled{border-color:var(--c)}
+.lback{background:none;border:none;color:var(--m);font-size:.78rem;cursor:pointer;margin-bottom:1rem}
+.lphshow{font-size:.8rem;color:rgba(240,239,255,.5);margin-bottom:1.1rem}
+.lphshow strong{color:var(--w)}
+.lerr{color:#F87171;font-size:.76rem;margin-top:.4rem;display:none}.lerr.a{display:block}
+.lresend{text-align:center;font-size:.75rem;color:var(--m);margin-top:.6rem}
+.lresend span{color:var(--pl);cursor:pointer;font-weight:600}
+.lresend span.dis{color:var(--m);cursor:default}
+.lsucc{text-align:center;padding:1.5rem 0}
+.lsucc .lsi{font-size:3rem;margin-bottom:.5rem}
+
+/* ── HOME ────────────────────────────── */
+.hero{padding:80px 5% 2rem;text-align:center;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.chip{display:inline-flex;align-items:center;gap:.4rem;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);color:var(--c);padding:.28rem .85rem;border-radius:100px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1.1rem}
+h1{font-size:clamp(1.9rem,6.5vw,3.4rem);font-weight:800;line-height:1.1;margin-bottom:.9rem}
+.gr{background:linear-gradient(90deg,var(--pl),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hsub{color:rgba(240,239,255,.6);font-size:.92rem;max-width:460px;margin-bottom:1.8rem;line-height:1.6}
+.hbtns{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.btn{background:linear-gradient(135deg,var(--p),var(--c));color:#fff;border:none;padding:.75rem 1.5rem;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn:hover{opacity:.88}
+.btn2{background:transparent;color:var(--w);border:1px solid var(--b);padding:.75rem 1.5rem;border-radius:9px;font-size:.88rem;cursor:pointer}
+.stats{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;padding:1.4rem 4%;border-top:1px solid var(--b);border-bottom:1px solid var(--b)}
+.st{text-align:center}
+.snum{font-size:1.55rem;font-weight:800;background:linear-gradient(90deg,var(--pl),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.slbl{font-size:.65rem;color:var(--m);text-transform:uppercase;letter-spacing:.06em}
+.founders{padding:1.4rem 4%;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.flbl{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--pink)}
+.fc{display:flex;align-items:center;gap:1rem;background:linear-gradient(135deg,rgba(255,107,255,.07),rgba(255,200,80,.05));border:1px solid rgba(255,107,255,.28);border-radius:14px;padding:1.2rem 1.4rem;max-width:480px;width:100%;position:relative}
+.fa{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#FFC850);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;color:#0A0A12;flex-shrink:0}
+.fn{font-size:.95rem;font-weight:800;background:linear-gradient(90deg,var(--pink),#FFC850);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.fr{font-size:.7rem;color:rgba(255,107,255,.7);font-weight:600;margin:.1rem 0 .25rem}
+.fd{font-size:.75rem;color:rgba(240,239,255,.45);line-height:1.4}
+.fbg{position:absolute;top:.65rem;right:.9rem;font-size:.6rem;font-weight:700;color:#FFC850;background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.28);padding:.15rem .5rem;border-radius:100px}
+
+/* ── SUBJECTS ────────────────────────── */
+.ph{padding:68px 4% 1rem;border-bottom:1px solid var(--b)}
+.ph h2{font-size:1.4rem;font-weight:700;margin-bottom:.25rem}
+.ph p{color:var(--m);font-size:.82rem}
+.semtabs{display:flex;gap:.5rem;padding:.7rem 4%;background:var(--bg2);border-bottom:1px solid var(--b)}
+.semtab{background:none;border:1px solid var(--b);color:var(--m);padding:.38rem 1.1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.semtab.a{background:linear-gradient(135deg,var(--p),var(--c));border-color:transparent;color:#fff}
+.srch{padding:.75rem 4%;background:var(--bg2);border-bottom:1px solid var(--b)}
+.srch input{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--w);padding:.6rem .95rem;border-radius:8px;font-size:.85rem;outline:none}
+.srch input:focus{border-color:var(--c)}.srch input::placeholder{color:var(--m)}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.75rem;padding:1rem 4%}
+.sc{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:1.1rem;cursor:pointer;transition:all .2s}
+.sc:hover{border-color:var(--pl);transform:translateY(-2px)}
+.si{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.65rem}
+.sn2{font-size:.82rem;font-weight:700;margin-bottom:.2rem;line-height:1.3}
+.scd{font-size:.66rem;color:var(--m);margin-bottom:.55rem}
+.sm{display:flex;gap:.35rem;flex-wrap:wrap}
+.sb2{padding:.13rem .45rem;border-radius:4px;font-size:.6rem;font-weight:700}
+.sem-badge{font-size:.6rem;font-weight:700;padding:.13rem .45rem;border-radius:4px;background:rgba(6,182,212,.1);color:var(--c);border:1px solid rgba(6,182,212,.2)}
+
+/* ── QUESTIONS ───────────────────────── */
+.qh{padding:62px 4% .9rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid var(--b);background:var(--bg2)}
+.bk{background:none;border:1px solid var(--b);color:var(--m);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:.9rem;flex-shrink:0}
+.qhi h3{font-size:1rem;font-weight:700;line-height:1.2}
+.qhi span{font-size:.7rem;color:var(--m)}
+
+/* Unit tabs */
+.utabs{display:flex;gap:.4rem;padding:.65rem 4%;background:var(--bg2);border-bottom:1px solid var(--b);overflow-x:auto;scrollbar-width:none}
+.utab{background:none;border:1px solid var(--b);color:var(--m);padding:.3rem .75rem;border-radius:6px;font-size:.73rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
+.utab.a{background:rgba(108,60,225,.2);border-color:var(--pl);color:var(--w)}
+
+/* Marks filter */
+.mf2{display:flex;gap:.4rem;padding:.55rem 4%;border-bottom:1px solid var(--b);background:var(--bg)}
+.mfb{background:none;border:1px solid var(--b);color:var(--m);padding:.28rem .7rem;border-radius:6px;font-size:.72rem;cursor:pointer;font-weight:600}
+.mfb.a{border-color:var(--yellow);color:var(--yellow);background:rgba(245,158,11,.1)}
+
+.ql{padding:.9rem 4%}
+.qcard{background:var(--bg2);border:1px solid var(--b);border-radius:11px;margin-bottom:.7rem;overflow:hidden;transition:border-color .2s}
+.qcard:hover{border-color:rgba(108,60,225,.4)}
+.qhead{padding:1rem 1rem .75rem;cursor:pointer}
+.qtop{display:flex;gap:.65rem;align-items:flex-start}
+.qnum{width:26px;height:26px;border-radius:6px;background:rgba(108,60,225,.15);border:1px solid rgba(108,60,225,.28);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--pl);flex-shrink:0;margin-top:.1rem}
+.qtxt{font-size:.85rem;line-height:1.6;flex:1}
+.qbadges{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.badge-2m{background:rgba(6,182,212,.12);color:var(--c);border:1px solid rgba(6,182,212,.25);padding:.12rem .45rem;border-radius:4px;font-size:.62rem;font-weight:700}
+.badge-10m{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.25);padding:.12rem .45rem;border-radius:4px;font-size:.62rem;font-weight:700}
+.badge-unit{background:rgba(139,92,246,.1);color:var(--pl);border:1px solid rgba(139,92,246,.2);padding:.12rem .45rem;border-radius:4px;font-size:.62rem;font-weight:600}
+.badge-year{background:rgba(255,255,255,.05);color:var(--m);border:1px solid rgba(255,255,255,.08);padding:.12rem .45rem;border-radius:4px;font-size:.62rem}
+.qactions{display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap}
+.qbtn{border:none;padding:.35rem .8rem;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer}
+.btn-sol{background:linear-gradient(135deg,var(--p),var(--pl));color:#fff}
+.btn-script{background:linear-gradient(135deg,#FF6BFF,#FFC850);color:#0A0A12}
+.btn-qr{background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.25)!important;color:var(--c);border:none}
+.btn-vid{background:linear-gradient(135deg,var(--g),var(--c));color:#fff}
+.btn-vid.soon{background:rgba(255,255,255,.06);color:var(--m);cursor:default}
+
+/* Solution panel */
+.sol-panel{display:none;border-top:1px solid var(--b);padding:1rem;background:rgba(108,60,225,.04)}
+.sol-panel.open{display:block}
+.sol-loading{display:flex;align-items:center;gap:.6rem;color:var(--m);font-size:.82rem;padding:.5rem 0}
+.sol-loading .sp{width:16px;height:16px;border:2px solid var(--b);border-top-color:var(--pl);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sol-content{font-size:.83rem;line-height:1.75;color:rgba(240,239,255,.88)}
+.sol-content h4{font-size:.8rem;font-weight:700;color:var(--c);margin:1rem 0 .4rem;text-transform:uppercase;letter-spacing:.05em}
+.sol-content h4:first-child{margin-top:0}
+.sol-content p{margin-bottom:.6rem}
+.sol-content ul{padding-left:1.2rem;margin-bottom:.6rem}
+.sol-content ul li{margin-bottom:.3rem}
+.sol-content .formula{background:var(--bg3);border-left:3px solid var(--pl);padding:.5rem .75rem;border-radius:0 6px 6px 0;font-family:monospace;font-size:.82rem;margin:.5rem 0;color:var(--pl)}
+.sol-content .step{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.15);border-radius:7px;padding:.6rem .8rem;margin:.4rem 0}
+.sol-content .step-num{color:var(--g);font-weight:700;font-size:.72rem;margin-bottom:.2rem}
+.marks-tip{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:.55rem .8rem;font-size:.75rem;color:rgba(245,158,11,.9);margin-top:.75rem}
+
+/* QR row in card */
+.qr-row{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-top:1px solid var(--b);background:rgba(6,182,212,.03)}
+.qr-box{background:#fff;border-radius:6px;padding:3px;flex-shrink:0}
+.qr-info .qid-txt{font-size:.65rem;color:var(--c);font-weight:700;font-family:monospace}
+.qr-info .qr-hint{font-size:.62rem;color:var(--m);margin-top:.15rem}
+.qr-info .qr-live{font-size:.63rem;color:var(--g);font-weight:600;margin-top:.15rem}
+
+/* Script modal */
+.mo{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.88);display:none;align-items:flex-end;justify-content:center;padding:0}
+.mo.a{display:flex}
+.md{background:var(--bg2);border:1px solid var(--b);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:88vh;display:flex;flex-direction:column;animation:slideup .25s ease}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.md-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:.75rem auto .5rem}
+.md-head{padding:.75rem 1.2rem 1rem;border-bottom:1px solid var(--b);flex-shrink:0}
+.md-head h3{font-size:1rem;font-weight:700}
+.md-head p{font-size:.75rem;color:var(--m);margin-top:.2rem}
+.md-body{padding:1rem 1.2rem;overflow-y:auto;flex:1}
+.script-loading{text-align:center;padding:2rem;color:var(--m)}
+.script-loading .sl-spin{width:32px;height:32px;border:3px solid var(--b);border-top-color:var(--pink);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem}
+.script-block{margin-bottom:1.2rem}
+.script-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.22rem .6rem;border-radius:4px;display:inline-block;margin-bottom:.5rem}
+.sl-intro{background:rgba(6,182,212,.1);color:var(--c);border:1px solid rgba(6,182,212,.2)}
+.sl-main{background:rgba(108,60,225,.1);color:var(--pl);border:1px solid rgba(108,60,225,.2)}
+.sl-formula{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+.sl-outro{background:rgba(16,185,129,.1);color:var(--g);border:1px solid rgba(16,185,129,.2)}
+.script-txt{font-size:.83rem;line-height:1.75;color:rgba(240,239,255,.85);background:var(--bg3);border-radius:8px;padding:.85rem 1rem}
+.md-foot{padding:.85rem 1.2rem;border-top:1px solid var(--b);display:flex;gap:.6rem;flex-shrink:0}
+.md-copy{flex:1;background:linear-gradient(135deg,var(--p),var(--c));color:#fff;border:none;padding:.7rem;border-radius:9px;font-size:.85rem;font-weight:700;cursor:pointer}
+.md-close{background:rgba(255,255,255,.06);border:1px solid var(--b);color:var(--m);padding:.7rem 1.1rem;border-radius:9px;font-size:.82rem;cursor:pointer}
+
+/* QR SCANNER PAGE */
+.scan-wrap{padding:72px 4% 2rem;max-width:560px;margin:0 auto}
+.scan-wrap h2{font-size:1.35rem;font-weight:700;margin-bottom:.25rem}
+.scan-wrap>p{color:var(--m);font-size:.82rem;margin-bottom:1.4rem}
+.scan-box{background:var(--bg2);border:2px dashed rgba(108,60,225,.35);border-radius:16px;padding:2rem 1.4rem;text-align:center;margin-bottom:1rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.scan-box:hover{border-color:var(--c)}.scan-box.sc{border-color:var(--c);border-style:solid}
+.scan-icon{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,rgba(108,60,225,.2),rgba(6,182,212,.2));display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin:0 auto .8rem;border:2px solid var(--b)}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);animation:scanl 2s linear infinite;display:none}
+.scan-box.sc .scan-line{display:block}
+@keyframes scanl{0%{top:10%}100%{top:90%}}
+.or-div{display:flex;align-items:center;gap:.75rem;margin:.9rem 0;color:var(--m);font-size:.78rem}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--b)}
+.id-row{display:flex;gap:.5rem;margin-bottom:1.3rem}
+.id-input{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:8px;color:var(--w);font-size:.85rem;outline:none;padding:.62rem .85rem}
+.id-input:focus{border-color:var(--c)}.id-input::placeholder{color:var(--m)}
+.id-btn{background:linear-gradient(135deg,var(--p),var(--c));color:#fff;border:none;padding:0 1.1rem;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer}
+.scan-result{background:var(--bg2);border:1px solid rgba(6,182,212,.2);border-radius:12px;padding:1.2rem;display:none}
+.scan-result.a{display:block}
+.sr-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c);margin-bottom:.65rem}
+.sr-qtxt{font-size:.85rem;line-height:1.55;border-left:3px solid var(--pl);padding-left:.8rem;margin-bottom:1rem}
+.sr-vid{background:var(--bg3);border:1px solid var(--b);border-radius:9px;padding:.85rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.75rem}
+.sr-vid-icon{width:42px;height:32px;background:linear-gradient(135deg,var(--p),var(--c));border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.sr-qr-wrap{display:flex;align-items:center;gap:.75rem;background:var(--bg3);border:1px solid var(--b);border-radius:9px;padding:.8rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(60px);z-index:999;background:var(--bg3);border:1px solid rgba(6,182,212,.25);border-radius:9px;padding:.65rem 1.1rem;font-size:.78rem;display:flex;align-items:center;gap:.4rem;opacity:0;transition:all .3s;box-shadow:0 4px 24px rgba(0,0,0,.5);white-space:nowrap}
+.toast.a{transform:translateX(-50%) translateY(0);opacity:1}
+
+#file-in{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="lp" id="loginPage">
+<div class="lcard">
+  <div class="llogo"><div class="dot"></div>Exam Buddy</div>
+  <p class="lsub">AKTU BTech — Free Access 🎓</p>
+  <div class="lstep a" id="ls1">
+    <div class="llbl">📱 Mobile Number</div>
+    <div class="lphinp"><span class="lcc">🇮🇳 +91</span><input type="tel" id="ph" maxlength="10" placeholder="10 digit number" oninput="phv()" onkeydown="if(event.key==='Enter')sndotp()"></div>
+    <div class="lerr" id="pherr">Valid 10-digit number daalo</div>
+    <button class="lbtn" id="sndbtn" onclick="sndotp()" disabled>OTP Bhejo →</button>
+  </div>
+  <div class="lstep" id="ls2">
+    <button class="lback" onclick="lgoback()">← Wapis</button>
+    <div class="lphshow">OTP bheja: <strong id="phdisp"></strong></div>
+    <div class="llbl">🔐 6-digit OTP</div>
+    <div class="lotprow" id="otpr">
+      <input type="tel" maxlength="1" oninput="om(this,0)" onkeydown="ob(event,0)">
+      <input type="tel" maxlength="1" oninput="om(this,1)" onkeydown="ob(event,1)">
+      <input type="tel" maxlength="1" oninput="om(this,2)" onkeydown="ob(event,2)">
+      <input type="tel" maxlength="1" oninput="om(this,3)" onkeydown="ob(event,3)">
+      <input type="tel" maxlength="1" oninput="om(this,4)" onkeydown="ob(event,4)">
+      <input type="tel" maxlength="1" oninput="om(this,5)" onkeydown="ob(event,5)">
+    </div>
+    <div class="lerr" id="otperr">Galat OTP!</div>
+    <button class="lbtn" id="vrbtn" onclick="vrotp()" disabled>✅ Verify</button>
+    <div class="lresend">OTP nahi aaya? <span id="rsndbtn" class="dis" onclick="resend()">Resend</span> <span id="ltmr"></span></div>
+  </div>
+  <div class="lstep" id="ls3">
+    <div class="lsucc"><div class="lsi">🎉</div><h3>Login Ho Gaya!</h3><p style="color:var(--m);font-size:.82rem;margin-top:.3rem">Welcome to Exam Buddy</p>
+    <button class="lbtn" style="margin-top:1.3rem" onclick="lenter()">App Kholो →</button></div>
+  </div>
+</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><div class="dot"></div>Exam Buddy</div>
+  <div class="nav-right">
+    <div class="nav-user" id="navUser">AKTU Student</div>
+    <button id="install-app-btn" onclick="installApp()" style="display:none;align-items:center;gap:.35rem;background:linear-gradient(135deg,#6C3CE1,#06B6D4);color:#fff;border:none;padding:.35rem .85rem;border-radius:8px;font-size:.74rem;font-weight:700;cursor:pointer;animation:pulse 2s infinite">
+      📲 Install App
+    </button>
+    <button class="btn" style="padding:.35rem .9rem;font-size:.76rem" onclick="sp('scanner')">📷 Scan</button>
+  </div>
+</nav>
+<div class="bnav">
+  <button class="bn a" id="bn-home" onclick="sp('home')"><span>🏠</span>Home</button>
+  <button class="bn" id="bn-subjects" onclick="sp('subjects')"><span>📚</span>Subjects</button>
+  <button class="bn" id="bn-questions" onclick="sp('questions')" style="display:none"><span>📝</span>Questions</button>
+  <button class="bn" id="bn-scanner" onclick="sp('scanner')"><span>📷</span>Scanner</button>
+</div>
+
+<!-- HOME PAGE -->
+<div id="pg-home" class="pg a">
+  <div class="hero">
+    <div class="chip">🎓 AKTU Quantum Book — 1st & 2nd Semester</div>
+    <h1>Exam ki <span class="gr">tension khatam,</span><br>success pakka ✨</h1>
+    <p class="hsub">AKTU BTech ke Quantum Book questions — 2 marks & 10 marks solutions ke saath. QR scan karo aur video dekho!</p>
+    <div class="hbtns">
+      <button class="btn" onclick="sp('subjects')">📚 Subjects Dekho</button>
+      <button class="btn2" onclick="sp('scanner')">📷 QR Scan Karo</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="st"><div class="snum">10</div><div class="slbl">Subjects</div></div>
+    <div class="st"><div class="snum">50</div><div class="slbl">Units/Chapters</div></div>
+    <div class="st"><div class="snum">2M+10M</div><div class="slbl">Solutions</div></div>
+    <div class="st"><div class="snum">QR</div><div class="slbl">Video Access</div></div>
+  </div>
+  <div class="founders">
+    <div class="flbl">👨‍💻 Founders</div>
+    <div class="fc">
+      <div class="fa">HD</div>
+      <div><div class="fn">Hritik Dwivedi</div><div class="fr">Founder · Exam Buddy</div><div class="fd">AKTU students ki padhai aasaan karne ka sapna.</div></div>
+      <div class="fbg">✦ Founder</div>
+    </div>
+    <div class="fc" style="background:linear-gradient(135deg,rgba(6,182,212,.07),rgba(16,185,129,.05));border-color:rgba(6,182,212,.28)">
+      <div class="fa" style="background:linear-gradient(135deg,var(--c),var(--g))">PS</div>
+      <div><div class="fn" style="background:linear-gradient(90deg,var(--c),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Priyam Singh</div><div class="fr" style="color:rgba(6,182,212,.7)">Co-Founder · Exam Buddy</div><div class="fd">Vision aur dedication ke saath platform ka saathi.</div></div>
+      <div class="fbg" style="color:var(--c);background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.28)">✦ Co-Founder</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBJECTS PAGE -->
+<div id="pg-subjects" class="pg">
+  <div class="ph"><h2>📚 AKTU Subjects</h2><p>Semester choose karo → Subject → Questions with Solutions</p></div>
+  <div class="semtabs">
+    <button class="semtab a" id="st1" onclick="setSem(1)">📗 Semester 1</button>
+    <button class="semtab" id="st2" onclick="setSem(2)">📘 Semester 2</button>
+  </div>
+  <div class="srch"><input id="ss" placeholder="🔍 Subject search karo..." oninput="fsub()"></div>
+  <div class="sg" id="sg"></div>
+</div>
+
+<!-- QUESTIONS PAGE -->
+<div id="pg-questions" class="pg">
+  <div class="qh">
+    <button class="bk" onclick="sp('subjects')">←</button>
+    <div class="qhi"><h3 id="qsn">Subject</h3><span id="qsc">Code • Sem</span></div>
+  </div>
+  <div class="utabs" id="utabs"></div>
+  <div class="mf2">
+    <button class="mfb a" id="mf-all" onclick="setMF('all')">📋 All</button>
+    <button class="mfb" id="mf-2" onclick="setMF('2')">⚡ 2 Marks</button>
+    <button class="mfb" id="mf-10" onclick="setMF('10')">📖 10 Marks</button>
+  </div>
+  <div class="ql" id="ql"></div>
+</div>
+
+<!-- SCANNER PAGE -->
+<div id="pg-scanner" class="pg">
+<div class="scan-wrap">
+  <h2>📷 QR Scanner</h2>
+  <p>Question ka QR code scan karo — seedha video solution dekho!</p>
+  <div class="scan-box" id="scanbox" onclick="document.getElementById('file-in').click()">
+    <div class="scan-line"></div>
+    <div class="scan-icon" id="scan-icon">📷</div>
+    <div style="font-size:.95rem;font-weight:600;margin-bottom:.3rem" id="scan-title">QR Code Upload Karo</div>
+    <p style="font-size:.77rem;color:var(--m)" id="scan-sub">Question ka QR code photo click karke yahan upload karo</p>
+  </div>
+  <input type="file" id="file-in" accept="image/*" onchange="handleScan(this)">
+  <div class="or-div">ya Question ID type karo</div>
+  <div class="id-row">
+    <input class="id-input" id="qid-inp" placeholder="e.g. EB-PHY-U1-001">
+    <button class="id-btn" onclick="searchByID()">🔍 Dhundho</button>
+  </div>
+  <div class="scan-result" id="scan-result">
+    <div class="sr-label">✅ Question Mila</div>
+    <div class="sr-qtxt" id="sr-qtxt"></div>
+    <div class="sr-vid" id="sr-vid"></div>
+    <div class="sr-qr-wrap" id="sr-qr-wrap"></div>
+  </div>
+</div>
+</div>
+
+<!-- SCRIPT MODAL -->
+<div class="mo" id="scriptMo" onclick="closeMo(event,'scriptMo')">
+<div class="md">
+  <div class="md-handle"></div>
+  <div class="md-head">
+    <h3>🎬 Video Script Generator</h3>
+    <p id="script-mo-sub">AI se complete script generate ho rahi hai...</p>
+  </div>
+  <div class="md-body" id="script-body">
+    <div class="script-loading"><div class="sl-spin"></div><p>Script generate ho rahi hai...</p></div>
+  </div>
+  <div class="md-foot">
+    <button class="md-copy" onclick="copyScript()">📋 Script Copy Karo</button>
+    <button class="md-close" onclick="document.getElementById('scriptMo').classList.remove('a')">✕</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"><span id="ti"></span><span id="tm2"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// VIDEO LINKS — Yahan YouTube/Drive links daalo
+// Format: 'QUESTION_ID': 'https://youtu.be/...'
+// ═══════════════════════════════════════════════
+const VIDEO_LINKS = {
+  // 'EB-MATH1-U1-001': 'https://youtu.be/xxxxx',
+};
+
+// ═══════════════════════════════════════════════
+// SUBJECTS DATABASE
+// ═══════════════════════════════════════════════
+const SUBJECTS = [
+  {id:'math1', n:'Mathematics - I',          c:'KAS101',  ic:'📐', cl:'#6C3CE1', s:1, units:['Matrices & Linear Algebra','Differential Calculus','Integral Calculus','Differential Equations','Vector Calculus']},
+  {id:'phy',   n:'Engineering Physics',       c:'KAS102',  ic:'🔬', cl:'#06B6D4', s:1, units:['Electrostatics & EM Waves','Wave Optics','Quantum Mechanics','Lasers & Fiber Optics','Semiconductor Physics']},
+  {id:'chem',  n:'Engineering Chemistry',     c:'KAS101C', ic:'⚗️', cl:'#10B981', s:1, units:['Atomic Structure & Bonding','Thermodynamics','Electrochemistry','Polymers & Composites','Water Treatment']},
+  {id:'bee',   n:'Basic Electrical Engg',     c:'KEE101',  ic:'💡', cl:'#F59E0B', s:1, units:['DC Circuits','AC Circuits','Transformers','Electrical Machines','Measuring Instruments']},
+  {id:'prog',  n:'Programming (C Language)',  c:'KCS101',  ic:'💻', cl:'#8B5CF6', s:1, units:['Intro to C & Algorithms','Control Structures','Functions & Recursion','Arrays, Strings & Pointers','Structures & File I/O']},
+  {id:'math2', n:'Mathematics - II',          c:'KAS201',  ic:'📊', cl:'#8B5CF6', s:2, units:['Infinite Series','Complex Variables','Laplace Transform','Fourier Series & Transform','Partial Differential Equations']},
+  {id:'emd',   n:'Engg Mechanics & Drawing',  c:'KME201',  ic:'📏', cl:'#EF4444', s:2, units:['Statics — Forces & Moments','Centroid & Moment of Inertia','Dynamics — Kinematics','Dynamics — Kinetics','Engineering Drawing']},
+  {id:'bme',   n:'Basic Mechanical Engg',     c:'KME101',  ic:'⚙️', cl:'#F59E0B', s:2, units:['Thermodynamics Basics','IC Engines & Steam Turbines','Fluid Mechanics','Manufacturing Processes','Machine Elements']},
+  {id:'bec',   n:'Basic Electronics & Comm',  c:'KEC101',  ic:'🔌', cl:'#06B6D4', s:2, units:['Semiconductor Diodes','Transistors & Amplifiers','Digital Electronics','Communication Systems','Operational Amplifiers']},
+  {id:'evs',   n:'Environmental Science',     c:'KVE101',  ic:'🌿', cl:'#10B981', s:2, units:['Ecosystems & Biodiversity','Natural Resources','Environmental Pollution','Environmental Laws & EIA','Sustainable Development']},
+];
+
+// ═══════════════════════════════════════════════
+// QUESTIONS DATABASE — 2M & 10M
+// ═══════════════════════════════════════════════
+const QDB = {
+math1: [
+  // UNIT 1
+  {id:'EB-MATH1-U1-001',u:1,m:2,t:'Define rank of a matrix. What is the rank of a null matrix?'},
+  {id:'EB-MATH1-U1-002',u:1,m:2,t:'State the conditions for a system of equations AX=B to be consistent.'},
+  {id:'EB-MATH1-U1-003',u:1,m:2,t:'Define eigenvalues and eigenvectors of a matrix.'},
+  {id:'EB-MATH1-U1-004',u:1,m:2,t:'State Cayley-Hamilton theorem with an example.'},
+  {id:'EB-MATH1-U1-005',u:1,m:2,t:'What is a symmetric matrix? Give an example of order 3×3.'},
+  {id:'EB-MATH1-U1-006',u:1,m:10,t:'Find the rank of matrix A = [[1,2,3],[4,5,6],[7,8,9]] using row echelon form. Also examine consistency of AX=0.'},
+  {id:'EB-MATH1-U1-007',u:1,m:10,t:'Find eigenvalues and eigenvectors of A = [[2,-1,0],[-1,2,-1],[0,-1,2]]. Verify Cayley-Hamilton theorem.'},
+  {id:'EB-MATH1-U1-008',u:1,m:10,t:'Solve the system using Gauss elimination: x+y+z=6, x-y+2z=5, 3x+y+z=8. Is the solution unique?'},
+  // UNIT 2
+  {id:'EB-MATH1-U2-001',u:2,m:2,t:"State Rolle's theorem. Write its geometrical interpretation."},
+  {id:'EB-MATH1-U2-002',u:2,m:2,t:"State Lagrange's Mean Value Theorem."},
+  {id:'EB-MATH1-U2-003',u:2,m:2,t:'Define partial derivative. Find ∂z/∂x if z = x²y + y³.'},
+  {id:'EB-MATH1-U2-004',u:2,m:2,t:"State Euler's theorem for homogeneous functions."},
+  {id:'EB-MATH1-U2-005',u:2,m:2,t:"Define Taylor's series. Write expansion of e^x about x=0."},
+  {id:'EB-MATH1-U2-006',u:2,m:10,t:"Verify Rolle's theorem for f(x)=x(x-1)(x-2) in [0,2]. Also apply Lagrange's MVT to f(x)=x²-3x+2 in [0,2]."},
+  {id:'EB-MATH1-U2-007',u:2,m:10,t:"Expand f(x)=e^x using Taylor's series about x=0 up to 5 terms. Hence find approximate value of e^0.5."},
+  {id:'EB-MATH1-U2-008',u:2,m:10,t:"If u=x³+y³-3axy, find ∂u/∂x, ∂u/∂y. Verify ∂²u/∂x∂y = ∂²u/∂y∂x. Apply Euler's theorem."},
+  // UNIT 3
+  {id:'EB-MATH1-U3-001',u:3,m:2,t:'What is a double integral? Write the formula for area using double integral.'},
+  {id:'EB-MATH1-U3-002',u:3,m:2,t:'Define Fourier series. Write the formula for Fourier coefficients a₀, aₙ, bₙ.'},
+  {id:'EB-MATH1-U3-003',u:3,m:2,t:'Write the condition to change order of integration in double integral.'},
+  {id:'EB-MATH1-U3-004',u:3,m:2,t:'Define Beta and Gamma functions. Write the relation between them.'},
+  {id:'EB-MATH1-U3-005',u:3,m:2,t:'What is the volume of solid of revolution? Write the formula.'},
+  {id:'EB-MATH1-U3-006',u:3,m:10,t:'Evaluate ∬xy dA over region bounded by y=x and y=x². Change order of integration in ∫₀¹∫ₓ¹ y²dy dx.'},
+  {id:'EB-MATH1-U3-007',u:3,m:10,t:"Expand f(x)=x² in Fourier series in (-π,π). Deduce π²/6 = 1+1/4+1/9+..."},
+  // UNIT 4
+  {id:'EB-MATH1-U4-001',u:4,m:2,t:'Write the standard form of first-order linear ODE. Give one example.'},
+  {id:'EB-MATH1-U4-002',u:4,m:2,t:'Define particular integral and complementary function in ODE.'},
+  {id:'EB-MATH1-U4-003',u:4,m:2,t:'What is a Bernoulli equation? How is it solved?'},
+  {id:'EB-MATH1-U4-004',u:4,m:2,t:"State the condition for exactness of M dx + N dy = 0."},
+  {id:'EB-MATH1-U4-005',u:4,m:2,t:'Write the auxiliary equation for (D²+4D+4)y=0 and find its roots.'},
+  {id:'EB-MATH1-U4-006',u:4,m:10,t:'Solve: (D²+4D+4)y = e^(-2x). Use method of variation of parameters.'},
+  {id:'EB-MATH1-U4-007',u:4,m:10,t:'Solve: dy/dx + y·tanx = sinx. Find integrating factor and complete solution.'},
+  // UNIT 5
+  {id:'EB-MATH1-U5-001',u:5,m:2,t:'Define gradient of a scalar field. Write formula for ∇φ.'},
+  {id:'EB-MATH1-U5-002',u:5,m:2,t:'What is divergence of a vector field? When is it said to be solenoidal?'},
+  {id:'EB-MATH1-U5-003',u:5,m:2,t:'Define curl of a vector. When is a vector field irrotational?'},
+  {id:'EB-MATH1-U5-004',u:5,m:2,t:"State Green's theorem in the plane."},
+  {id:'EB-MATH1-U5-005',u:5,m:2,t:"State Stokes' theorem."},
+  {id:'EB-MATH1-U5-006',u:5,m:10,t:'Find gradient of φ=x²yz at (1,1,1). Find directional derivative along i+j+k. Find angle between surfaces.'},
+  {id:'EB-MATH1-U5-007',u:5,m:10,t:"Verify Green's theorem for ∮(xy dx + x² dy) where C is square with vertices (0,0),(1,0),(1,1),(0,1)."},
+],
+phy: [
+  {id:'EB-PHY-U1-001',u:1,m:2,t:"State Gauss's law in electrostatics. Write its mathematical form."},
+  {id:'EB-PHY-U1-002',u:1,m:2,t:'Define electric flux. Write its SI unit.'},
+  {id:'EB-PHY-U1-003',u:1,m:2,t:"State Ampere's circuital law."},
+  {id:'EB-PHY-U1-004',u:1,m:2,t:"Write Maxwell's equations in differential form."},
+  {id:'EB-PHY-U1-005',u:1,m:2,t:'What is displacement current? Why did Maxwell introduce it?'},
+  {id:'EB-PHY-U1-006',u:1,m:10,t:"State and prove Gauss's law. Apply it to find electric field due to: (i) infinite line charge (ii) infinite plane sheet."},
+  {id:'EB-PHY-U1-007',u:1,m:10,t:"Derive Maxwell's equations from Faraday's and Ampere's laws. Show that EM waves travel at speed c=1/√(με)."},
+  {id:'EB-PHY-U2-001',u:2,m:2,t:'Define interference of light. State conditions for constructive and destructive interference.'},
+  {id:'EB-PHY-U2-002',u:2,m:2,t:"State Brewster's law. What happens at Brewster's angle?"},
+  {id:'EB-PHY-U2-003',u:2,m:2,t:'Distinguish between Fresnel and Fraunhofer diffraction.'},
+  {id:'EB-PHY-U2-004',u:2,m:2,t:'Define resolving power of a microscope.'},
+  {id:'EB-PHY-U2-005',u:2,m:2,t:'What is polarization? Name any two methods to produce plane polarized light.'},
+  {id:'EB-PHY-U2-006',u:2,m:10,t:"Explain Young's double slit experiment. Derive fringe width formula β=λD/d. Show effect of increasing d."},
+  {id:'EB-PHY-U2-007',u:2,m:10,t:'Explain single slit Fraunhofer diffraction. Derive intensity distribution. Find positions of minima and maxima.'},
+  {id:'EB-PHY-U3-001',u:3,m:2,t:'State de Broglie hypothesis. Write the formula for de Broglie wavelength.'},
+  {id:'EB-PHY-U3-002',u:3,m:2,t:'State Heisenberg Uncertainty Principle. Write its mathematical form.'},
+  {id:'EB-PHY-U3-003',u:3,m:2,t:'What is wave function ψ? What is its physical significance?'},
+  {id:'EB-PHY-U3-004',u:3,m:2,t:'Write time-independent Schrödinger equation.'},
+  {id:'EB-PHY-U3-005',u:3,m:2,t:'What is photoelectric effect? State Einstein equation for it.'},
+  {id:'EB-PHY-U3-006',u:3,m:10,t:'Explain Davisson-Germer experiment. How did it verify de Broglie hypothesis? Calculate wavelength for 54V electrons.'},
+  {id:'EB-PHY-U3-007',u:3,m:10,t:'Solve Schrödinger equation for particle in 1D infinite potential box. Find energy eigenvalues and normalized wavefunctions.'},
+  {id:'EB-PHY-U4-001',u:4,m:2,t:'Define stimulated emission. How is it different from spontaneous emission?'},
+  {id:'EB-PHY-U4-002',u:4,m:2,t:'What is population inversion? Why is it necessary for laser action?'},
+  {id:'EB-PHY-U4-003',u:4,m:2,t:'What is numerical aperture of an optical fiber?'},
+  {id:'EB-PHY-U4-004',u:4,m:2,t:'Distinguish between step-index and graded-index optical fibers.'},
+  {id:'EB-PHY-U4-005',u:4,m:2,t:'Define Einstein coefficients A₂₁ and B₁₂.'},
+  {id:'EB-PHY-U4-006',u:4,m:10,t:'Explain He-Ne laser with energy level diagram, construction, working. What is population inversion achieved here?'},
+  {id:'EB-PHY-U4-007',u:4,m:10,t:'Explain principle, construction and working of optical fiber. Derive condition for total internal reflection. Discuss applications.'},
+  {id:'EB-PHY-U5-001',u:5,m:2,t:'Distinguish between conductor, semiconductor and insulator using band theory.'},
+  {id:'EB-PHY-U5-002',u:5,m:2,t:'Define intrinsic and extrinsic semiconductors.'},
+  {id:'EB-PHY-U5-003',u:5,m:2,t:'What is Hall effect? Write formula for Hall coefficient.'},
+  {id:'EB-PHY-U5-004',u:5,m:2,t:'Define Fermi level. Where does it lie in intrinsic semiconductor?'},
+  {id:'EB-PHY-U5-005',u:5,m:2,t:'What is superconductivity? State Meissner effect.'},
+  {id:'EB-PHY-U5-006',u:5,m:10,t:'Explain p-n junction formation, depletion region, biasing. Draw V-I characteristics. Explain breakdown mechanisms.'},
+  {id:'EB-PHY-U5-007',u:5,m:10,t:'Explain Hall effect in semiconductors. Derive expression for Hall coefficient. Mention applications of Hall effect.'},
+],
+chem: [
+  {id:'EB-CHEM-U1-001',u:1,m:2,t:'Define ionic bond. Give two examples of ionic compounds.'},
+  {id:'EB-CHEM-U1-002',u:1,m:2,t:'State VSEPR theory. Use it to predict shape of water molecule.'},
+  {id:'EB-CHEM-U1-003',u:1,m:2,t:'What is hydrogen bonding? Distinguish intermolecular and intramolecular hydrogen bonding.'},
+  {id:'EB-CHEM-U1-004',u:1,m:2,t:"Define bond order. Calculate bond order of O₂ using MOT."},
+  {id:'EB-CHEM-U1-005',u:1,m:2,t:'What are metallic bonds? Explain electron sea model.'},
+  {id:'EB-CHEM-U1-006',u:1,m:10,t:"Explain molecular orbital theory. Draw MO diagrams for O₂ and N₂. Calculate bond order. Compare with VBT."},
+  {id:'EB-CHEM-U1-007',u:1,m:10,t:"Explain types of chemical bonding with examples. Compare ionic, covalent and metallic bonds in terms of properties."},
+  {id:'EB-CHEM-U2-001',u:2,m:2,t:'State first law of thermodynamics. Define internal energy.'},
+  {id:'EB-CHEM-U2-002',u:2,m:2,t:'Define enthalpy. Write the relation between ΔH and ΔU.'},
+  {id:'EB-CHEM-U2-003',u:2,m:2,t:'State second law of thermodynamics. Define entropy.'},
+  {id:'EB-CHEM-U2-004',u:2,m:2,t:'Define Gibbs free energy. Write the criteria for spontaneity.'},
+  {id:'EB-CHEM-U2-005',u:2,m:2,t:"State Hess's law of constant heat summation."},
+  {id:'EB-CHEM-U2-006',u:2,m:10,t:"Derive Gibbs-Helmholtz equation. Explain criteria for spontaneity using ΔG. Derive van't Hoff equation."},
+  {id:'EB-CHEM-U2-007',u:2,m:10,t:"Explain first and second laws of thermodynamics. Define entropy and show that entropy of universe always increases."},
+  {id:'EB-CHEM-U3-001',u:3,m:2,t:'Define electrode potential. State standard hydrogen electrode.'},
+  {id:'EB-CHEM-U3-002',u:3,m:2,t:'Write Nernst equation for electrode potential.'},
+  {id:'EB-CHEM-U3-003',u:3,m:2,t:'Define EMF of a cell. How is it related to Gibbs energy?'},
+  {id:'EB-CHEM-U3-004',u:3,m:2,t:'What is corrosion? Write electrochemical theory of corrosion.'},
+  {id:'EB-CHEM-U3-005',u:3,m:2,t:'Define conductance and molar conductance of electrolytic solutions.'},
+  {id:'EB-CHEM-U3-006',u:3,m:10,t:"Explain electrochemical cell with Daniel cell as example. Derive Nernst equation. Calculate EMF at non-standard conditions."},
+  {id:'EB-CHEM-U3-007',u:3,m:10,t:"Explain corrosion — mechanism, types, prevention methods including galvanization, tinning, anodizing, cathodic protection."},
+  {id:'EB-CHEM-U4-001',u:4,m:2,t:'Define polymer. Distinguish between monomer and polymer.'},
+  {id:'EB-CHEM-U4-002',u:4,m:2,t:'Distinguish between addition and condensation polymerization.'},
+  {id:'EB-CHEM-U4-003',u:4,m:2,t:'What are thermoplastics? Give two examples.'},
+  {id:'EB-CHEM-U4-004',u:4,m:2,t:'Define glass transition temperature Tg.'},
+  {id:'EB-CHEM-U4-005',u:4,m:2,t:'What is vulcanization of rubber? What is its purpose?'},
+  {id:'EB-CHEM-U4-006',u:4,m:10,t:"Describe synthesis, properties and uses of: (i) Nylon 6,6 (ii) Bakelite (iii) Polyethylene. Compare thermoplastics and thermosetting plastics."},
+  {id:'EB-CHEM-U4-007',u:4,m:10,t:"Explain composite materials — definition, classification, matrix and reinforcement. Describe carbon fiber reinforced polymer (CFRP) with applications."},
+  {id:'EB-CHEM-U5-001',u:5,m:2,t:'Define hardness of water. Distinguish temporary and permanent hardness.'},
+  {id:'EB-CHEM-U5-002',u:5,m:2,t:'What is BOD? What does high BOD indicate?'},
+  {id:'EB-CHEM-U5-003',u:5,m:2,t:'Define COD. How is it measured?'},
+  {id:'EB-CHEM-U5-004',u:5,m:2,t:'What is desalination? Name two methods.'},
+  {id:'EB-CHEM-U5-005',u:5,m:2,t:'Define scale and sludge in boilers. What are their effects?'},
+  {id:'EB-CHEM-U5-006',u:5,m:10,t:"Explain lime-soda process and zeolite process for water softening. Compare them. What is ion-exchange process?"},
+  {id:'EB-CHEM-U5-007',u:5,m:10,t:"Explain reverse osmosis and ultra-filtration for water purification. Discuss treatment of industrial effluents — physical, chemical, biological methods."},
+],
+bee: [
+  {id:'EB-BEE-U1-001',u:1,m:2,t:"State Ohm's law. Write its limitations."},
+  {id:'EB-BEE-U1-002',u:1,m:2,t:"State Kirchhoff's Current Law (KCL)."},
+  {id:'EB-BEE-U1-003',u:1,m:2,t:"State Kirchhoff's Voltage Law (KVL)."},
+  {id:'EB-BEE-U1-004',u:1,m:2,t:"State Thevenin's theorem."},
+  {id:'EB-BEE-U1-005',u:1,m:2,t:"State Norton's theorem."},
+  {id:'EB-BEE-U1-006',u:1,m:10,t:"Apply KVL and KCL to solve a 3-mesh network. Find branch currents using Thevenin's theorem."},
+  {id:'EB-BEE-U1-007',u:1,m:10,t:"State and prove Thevenin's theorem. Find Thevenin equivalent for given network and calculate current through load."},
+  {id:'EB-BEE-U2-001',u:2,m:2,t:'Define impedance in AC circuit. Write its unit.'},
+  {id:'EB-BEE-U2-002',u:2,m:2,t:'Define power factor. What is its value for purely resistive circuit?'},
+  {id:'EB-BEE-U2-003',u:2,m:2,t:'Define resonance in RLC series circuit. Write resonant frequency formula.'},
+  {id:'EB-BEE-U2-004',u:2,m:2,t:'Define active power, reactive power and apparent power.'},
+  {id:'EB-BEE-U2-005',u:2,m:2,t:'What is Q-factor of a series resonant circuit?'},
+  {id:'EB-BEE-U2-006',u:2,m:10,t:'Derive impedance of series RLC circuit. Find resonant frequency, Q-factor. Draw impedance vs frequency curve.'},
+  {id:'EB-BEE-U2-007',u:2,m:10,t:'Explain 3-phase star and delta connections. Derive relation between line and phase quantities. Calculate power in balanced 3-phase circuit.'},
+  {id:'EB-BEE-U3-001',u:3,m:2,t:'What is EMF equation of a transformer?'},
+  {id:'EB-BEE-U3-002',u:3,m:2,t:'Define voltage regulation of a transformer.'},
+  {id:'EB-BEE-U3-003',u:3,m:2,t:'What is all-day efficiency of a transformer?'},
+  {id:'EB-BEE-U3-004',u:3,m:2,t:'Distinguish between core type and shell type transformer.'},
+  {id:'EB-BEE-U3-005',u:3,m:2,t:'Define turns ratio of transformer. What does it determine?'},
+  {id:'EB-BEE-U3-006',u:3,m:10,t:'Explain single-phase transformer — principle, construction, working. Derive EMF equation. Define efficiency and voltage regulation.'},
+  {id:'EB-BEE-U3-007',u:3,m:10,t:'Perform open circuit and short circuit tests on transformer. Calculate equivalent circuit parameters and efficiency at given load.'},
+  {id:'EB-BEE-U4-001',u:4,m:2,t:'State working principle of DC motor.'},
+  {id:'EB-BEE-U4-002',u:4,m:2,t:'Write back EMF equation of DC motor.'},
+  {id:'EB-BEE-U4-003',u:4,m:2,t:'Distinguish between DC shunt and series motor in terms of speed-torque characteristics.'},
+  {id:'EB-BEE-U4-004',u:4,m:2,t:'What is the working principle of induction motor?'},
+  {id:'EB-BEE-U4-005',u:4,m:2,t:'Define slip in an induction motor.'},
+  {id:'EB-BEE-U4-006',u:4,m:10,t:'Explain 3-phase induction motor — working principle, construction (stator, rotor), slip, torque equation, speed control methods.'},
+  {id:'EB-BEE-U4-007',u:4,m:10,t:'Explain DC motor types: shunt, series, compound. Derive torque equation. Describe speed control methods: armature voltage, field flux control.'},
+  {id:'EB-BEE-U5-001',u:5,m:2,t:'What is a moving coil ammeter? State its principle.'},
+  {id:'EB-BEE-U5-002',u:5,m:2,t:'What is CRO? Name its main parts.'},
+  {id:'EB-BEE-U5-003',u:5,m:2,t:'Define sensitivity of a measuring instrument.'},
+  {id:'EB-BEE-U5-004',u:5,m:2,t:'What is a Wheatstone bridge? When is it balanced?'},
+  {id:'EB-BEE-U5-005',u:5,m:2,t:'What is an energy meter? State its principle.'},
+  {id:'EB-BEE-U5-006',u:5,m:10,t:'Explain CRO — block diagram, working, deflection system. How to measure voltage, frequency and phase using CRO?'},
+  {id:'EB-BEE-U5-007',u:5,m:10,t:'Explain moving iron ammeter and voltmeter — principle, construction, working, advantages and disadvantages.'},
+],
+prog: [
+  {id:'EB-PROG-U1-001',u:1,m:2,t:'What is an algorithm? Write algorithm for swapping two numbers.'},
+  {id:'EB-PROG-U1-002',u:1,m:2,t:'Define flowchart. Draw symbols for: start/stop, decision, process, I/O.'},
+  {id:'EB-PROG-U1-003',u:1,m:2,t:'What are data types in C? List all primary data types.'},
+  {id:'EB-PROG-U1-004',u:1,m:2,t:'What is a variable? State rules for naming variables in C.'},
+  {id:'EB-PROG-U1-005',u:1,m:2,t:'Explain increment (++) and decrement (--) operators in C.'},
+  {id:'EB-PROG-U1-006',u:1,m:10,t:"Write a C program to find largest of 3 numbers. Also draw flowchart. Explain C's basic structure with header files, main()."},
+  {id:'EB-PROG-U1-007',u:1,m:10,t:'Explain operators in C: arithmetic, relational, logical, bitwise, assignment, ternary. Give examples for each.'},
+  {id:'EB-PROG-U2-001',u:2,m:2,t:'What is the difference between while and do-while loop?'},
+  {id:'EB-PROG-U2-002',u:2,m:2,t:'What does break statement do in a loop? Give example.'},
+  {id:'EB-PROG-U2-003',u:2,m:2,t:'What is continue statement? How is it different from break?'},
+  {id:'EB-PROG-U2-004',u:2,m:2,t:'Write syntax of switch-case in C.'},
+  {id:'EB-PROG-U2-005',u:2,m:2,t:'What is nested loop? Write example to print 5×5 star pattern.'},
+  {id:'EB-PROG-U2-006',u:2,m:10,t:'Write C programs for: (i) Fibonacci series up to n terms (ii) Check prime number (iii) Print multiplication table. Explain loop control.'},
+  {id:'EB-PROG-U2-007',u:2,m:10,t:'Write C program to find sum of digits, reverse of a number, check palindrome. Explain if-else and switch with examples.'},
+  {id:'EB-PROG-U3-001',u:3,m:2,t:'What is a function in C? What is its purpose?'},
+  {id:'EB-PROG-U3-002',u:3,m:2,t:'Distinguish between actual and formal parameters.'},
+  {id:'EB-PROG-U3-003',u:3,m:2,t:'What is recursion? Give one example.'},
+  {id:'EB-PROG-U3-004',u:3,m:2,t:'Distinguish between call by value and call by reference.'},
+  {id:'EB-PROG-U3-005',u:3,m:2,t:'What is a static variable in C? What is its scope and lifetime?'},
+  {id:'EB-PROG-U3-006',u:3,m:10,t:'Write recursive C programs for: (i) Factorial (ii) Fibonacci (iii) GCD. Explain recursion with stack trace diagram.'},
+  {id:'EB-PROG-U3-007',u:3,m:10,t:'Explain functions in C — declaration, definition, types. Differentiate call by value and call by reference with swap program examples.'},
+  {id:'EB-PROG-U4-001',u:4,m:2,t:'What is an array? How is a 1D array declared in C?'},
+  {id:'EB-PROG-U4-002',u:4,m:2,t:'What is a pointer? How is it declared and initialized?'},
+  {id:'EB-PROG-U4-003',u:4,m:2,t:'What is pointer arithmetic? Give example.'},
+  {id:'EB-PROG-U4-004',u:4,m:2,t:'What is null pointer? When is it used?'},
+  {id:'EB-PROG-U4-005',u:4,m:2,t:'Write any 4 string handling functions in C with purpose.'},
+  {id:'EB-PROG-U4-006',u:4,m:10,t:'Write C program for matrix multiplication of two 3×3 matrices. Also write programs to sort array using bubble sort and binary search.'},
+  {id:'EB-PROG-U4-007',u:4,m:10,t:'Explain pointers in C — declaration, types, pointer to array, pointer to function. Write program using pointers to reverse an array.'},
+  {id:'EB-PROG-U5-001',u:5,m:2,t:'What is a structure in C? How is it different from array?'},
+  {id:'EB-PROG-U5-002',u:5,m:2,t:'What is a union? How does memory allocation differ from structure?'},
+  {id:'EB-PROG-U5-003',u:5,m:2,t:'What is a file? What are the modes to open a file in C?'},
+  {id:'EB-PROG-U5-004',u:5,m:2,t:'What is the difference between fprintf() and printf()?'},
+  {id:'EB-PROG-U5-005',u:5,m:2,t:'What is dynamic memory allocation? Name the functions used.'},
+  {id:'EB-PROG-U5-006',u:5,m:10,t:'Write C program using structure to store student record (name, roll, marks). Sort records by marks. Display using functions.'},
+  {id:'EB-PROG-U5-007',u:5,m:10,t:'Explain file handling in C — opening, reading, writing, closing. Write program to copy content of one file to another.'},
+],
+};
+// Add empty arrays for other subjects (math2, emd, bme, bec, evs)
+['math2','emd','bme','bec','evs'].forEach(id=>{
+  if(!QDB[id]) QDB[id]=[];
+  // Add sample questions
+  SUBJECTS.find(s=>s.id===id).units.forEach((uname,ui)=>{
+    for(let i=1;i<=7;i++){
+      const m=i<=5?2:10;
+      QDB[id].push({
+        id:`EB-${id.toUpperCase()}-U${ui+1}-00${i}`,
+        u:ui+1,m,
+        t:m===2?`(Unit ${ui+1}) Short question ${i}: ${uname} se related 2-marks question.`:`(Unit ${ui+1}) Long question ${i}: ${uname} ka detailed 10-marks question — explain, derive, describe.`
+      });
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let cSem=1, cSub=null, cUnit=0, cMF='all', scriptQ=null;
+
+// ── Navigation
+function sp(p){
+  document.querySelectorAll('.pg').forEach(x=>x.classList.remove('a'));
+  document.getElementById('pg-'+p).classList.add('a');
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('a'));
+  const b=document.getElementById('bn-'+p);if(b)b.classList.add('a');
+  if(p==='questions') document.getElementById('bn-questions').style.display='flex';
+  window.scrollTo(0,0);
+}
+
+// ── Semester
+function setSem(s){
+  cSem=s;
+  document.querySelectorAll('.semtab').forEach(t=>t.classList.remove('a'));
+  document.getElementById('st'+s).classList.add('a');
+  rSubs();
+}
+
+// ── Render Subjects
+function rSubs(){
+  const list=SUBJECTS.filter(s=>s.s===cSem);
+  document.getElementById('sg').innerHTML=list.map(s=>{
+    const qc=QDB[s.id]?QDB[s.id].length:0;
+    return `<div class="sc" onclick="openSub('${s.id}')">
+      <div class="si" style="background:${s.cl}22;border:1px solid ${s.cl}44">${s.ic}</div>
+      <div class="sn2">${s.n}</div>
+      <div class="scd">${s.c}</div>
+      <div class="sm">
+        <span class="sem-badge">Sem ${s.s}</span>
+        <span class="sb2" style="background:rgba(108,60,225,.12);color:#8B5CF6;border:1px solid rgba(108,60,225,.2)">📄 ${qc}Q</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fsub(){
+  const q=document.getElementById('ss').value.toLowerCase();
+  const list=SUBJECTS.filter(s=>s.s===cSem&&(s.n.toLowerCase().includes(q)||s.c.toLowerCase().includes(q)));
+  const sg=document.getElementById('sg');
+  sg.innerHTML=list.map(s=>{
+    const qc=QDB[s.id]?QDB[s.id].length:0;
+    return `<div class="sc" onclick="openSub('${s.id}')">
+      <div class="si" style="background:${s.cl}22;border:1px solid ${s.cl}44">${s.ic}</div>
+      <div class="sn2">${s.n}</div><div class="scd">${s.c}</div>
+      <div class="sm"><span class="sem-badge">Sem ${s.s}</span><span class="sb2" style="background:rgba(108,60,225,.12);color:#8B5CF6;border:1px solid rgba(108,60,225,.2)">📄 ${qc}Q</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ── Open subject
+function openSub(id){
+  cSub=SUBJECTS.find(s=>s.id===id);
+  cUnit=0; cMF='all';
+  document.getElementById('qsn').textContent=cSub.n;
+  document.getElementById('qsc').textContent=cSub.c+' • Sem '+cSub.s;
+  rUnits(); rQ(); sp('questions');
+}
+
+// ── Unit tabs
+function rUnits(){
+  const tabs=[{u:0,n:'All Units'},...cSub.units.map((n,i)=>({u:i+1,n:'Unit '+(i+1)+': '+n.split(' ').slice(0,3).join(' ')}))];
+  document.getElementById('utabs').innerHTML=tabs.map(t=>`<button class="utab${t.u===cUnit?' a':''}" onclick="setUnit(${t.u})">${t.n}</button>`).join('');
+}
+function setUnit(u){cUnit=u;document.querySelectorAll('.utab').forEach((t,i)=>t.classList.toggle('a',i===(u===0?0:u)));rQ();}
+
+// ── Marks filter
+function setMF(v){cMF=v;['all','2','10'].forEach(x=>document.getElementById('mf-'+x).classList.toggle('a',x===v));rQ();}
+
+// ── Render Questions
+function rQ(){
+  let qs=QDB[cSub.id]||[];
+  if(cUnit>0) qs=qs.filter(q=>q.u===cUnit);
+  if(cMF!=='all') qs=qs.filter(q=>String(q.m)===cMF);
+  if(!qs.length){document.getElementById('ql').innerHTML=`<div style="text-align:center;padding:3rem;color:var(--m)">📭 Is filter mein koi question nahi</div>`;return;}
+  document.getElementById('ql').innerHTML=qs.map((q,i)=>{
+    const hasVid=VIDEO_LINKS[q.id];
+    const mClass=q.m===2?'badge-2m':'badge-10m';
+    const mLabel=q.m===2?'⚡ 2 Marks':'📖 10 Marks';
+    return `<div class="qcard" id="card-${q.id.replace(/[^a-z0-9]/gi,'_')}">
+      <div class="qhead" onclick="toggleSol('${q.id}')">
+        <div class="qtop">
+          <div class="qnum">${i+1}</div>
+          <div style="flex:1">
+            <div class="qtxt">${q.t}</div>
+            <div class="qbadges">
+              <span class="${mClass}">${mLabel}</span>
+              <span class="badge-unit">Unit ${q.u}</span>
+              <span class="badge-year">AKTU PYQ</span>
+              <span style="margin-left:auto;font-size:.7rem;color:var(--m)">Tap for solution ↓</span>
+            </div>
+            <div class="qactions" onclick="event.stopPropagation()">
+              <button class="qbtn btn-sol" onclick="toggleSol('${q.id}')">📖 Solution Dekho</button>
+              <button class="qbtn btn-script" onclick="openScript(${JSON.stringify(q).replace(/"/g,'&quot;')})">🎬 Script</button>
+              ${hasVid?`<a class="qbtn btn-vid" href="${hasVid}" target="_blank">▶ Video</a>`:`<button class="qbtn btn-vid soon">🎬 Video Soon</button>`}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-panel" id="sol-${q.id.replace(/[^a-z0-9]/gi,'_')}">
+        <div class="sol-loading"><div class="sp"></div>AI solution load ho raha hai...</div>
+      </div>
+      <div class="qr-row">
+        <div class="qr-box" id="qr-${q.id.replace(/[^a-z0-9]/gi,'_')}"></div>
+        <div class="qr-info">
+          <div class="qid-txt">${q.id}</div>
+          ${hasVid?'<div class="qr-live">✅ Video Ready — QR Scan Karo!</div>':'<div class="qr-hint">📱 QR scan → video link</div>'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // QR codes
+  setTimeout(()=>{
+    qs.forEach(q=>{
+      const el=document.getElementById('qr-'+q.id.replace(/[^a-z0-9]/gi,'_'));
+      if(el&&!el.children.length){
+        const url=VIDEO_LINKS[q.id]||`https://exambuddy.aktu.in/video/${q.id}`;
+        try{new QRCode(el,{text:url,width:48,height:48,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
+        catch(e){el.innerHTML='<div style="width:48px;height:48px;background:#eee;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#333">QR</div>';}
+      }
+    });
+  },200);
+}
+
+// ── Toggle Solution (AI powered)
+const solCache={};
+async function toggleSol(qid){
+  const sid='sol-'+qid.replace(/[^a-z0-9]/gi,'_');
+  const panel=document.getElementById(sid);
+  if(panel.classList.contains('open')){panel.classList.remove('open');return;}
+  panel.classList.add('open');
+  if(solCache[qid]){panel.innerHTML=solCache[qid];return;}
+  const q=[...Object.values(QDB)].flat().find(x=>x.id===qid);
+  if(!q)return;
+  panel.innerHTML=`<div class="sol-loading"><div class="sp"></div>AI solution generate ho rahi hai...</div>`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:`You are an expert AKTU BTech professor. Give solutions in Hindi-English mix (Hinglish). 
+For 2-marks: Give concise 3-5 line answer with definition, formula if any, one example.
+For 10-marks: Give structured answer with: Introduction, Main content with steps/derivation, Formulas (clearly written), Diagrams description, Conclusion. 
+Format your response as HTML using these classes:
+- <h4 class="sol-head"> for section headings
+- <p> for paragraphs  
+- <div class="formula"> for formulas/equations
+- <div class="step"><div class="step-num">Step N</div>content</div> for steps
+- <ul><li> for bullet points
+- <div class="marks-tip"> for exam tips
+Keep it exam-focused. Total length appropriate for ${q.m} marks.`,
+        messages:[{role:'user',content:`Subject: ${cSub?.n||'Engineering'}\nQuestion (${q.m} marks, Unit ${q.u}): ${q.t}\n\nPlease provide complete solution.`}]
+      })
+    });
+    const data=await res.json();
+    const html=data.content?.map(c=>c.text||'').join('')||'Solution load nahi ho saka.';
+    const styled=`<div class="sol-content">${html}</div>`;
+    solCache[qid]=styled;
+    panel.innerHTML=styled;
+  } catch(e){
+    panel.innerHTML=`<div class="sol-content"><p style="color:var(--red)">❌ Internet connection check karo aur dobara try karo.</p></div>`;
+  }
+}
+
+// ── Script Modal
+function openScript(q){
+  scriptQ=q;
+  document.getElementById('script-mo-sub').textContent=q.t.substring(0,60)+'...';
+  document.getElementById('script-body').innerHTML=`<div class="script-loading"><div class="sl-spin"></div><p>Script generate ho rahi hai...</p></div>`;
+  document.getElementById('scriptMo').classList.add('a');
+  generateScript(q);
+}
+async function generateScript(q){
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:`You are helping an AKTU professor create video scripts. Generate a natural, engaging Hindi-English (Hinglish) video script that a teacher can read while recording. 
+Format as HTML with these sections:
+1. <div class="script-block"><span class="script-label sl-intro">🎬 INTRO (0:00-0:30)</span><div class="script-txt">...</div></div>
+2. <div class="script-block"><span class="script-label sl-main">📖 MAIN EXPLANATION</span><div class="script-txt">...</div></div>
+3. <div class="script-block"><span class="script-label sl-formula">📐 FORMULA/KEY POINTS</span><div class="script-txt">...</div></div>
+4. <div class="script-block"><span class="script-label sl-outro">✅ OUTRO & EXAM TIPS</span><div class="script-txt">...</div></div>
+Make it conversational, like a teacher talking to students. Include pauses [PAUSE], blackboard instructions [WRITE ON BOARD: ...], etc.`,
+        messages:[{role:'user',content:`Create video script for:\nSubject: ${cSub?.n||'Engineering'}\nQuestion (${q.m} marks): ${q.t}`}]
+      })
+    });
+    const data=await res.json();
+    const html=data.content?.map(c=>c.text||'').join('')||'Script generate nahi ho saka.';
+    document.getElementById('script-body').innerHTML=html;
+  } catch(e){
+    document.getElementById('script-body').innerHTML=`<p style="color:var(--red);padding:1rem">❌ Internet check karo aur retry karo.</p>`;
+  }
+}
+function copyScript(){
+  const txt=document.getElementById('script-body').innerText;
+  navigator.clipboard.writeText(txt).then(()=>toast('📋','Script copy ho gayi!')).catch(()=>toast('⚠️','Manual copy karo'));
+}
+function closeMo(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('a');}
+
+// ── Scanner
+function handleScan(inp){
+  if(!inp.files||!inp.files[0])return;
+  const box=document.getElementById('scanbox');
+  box.classList.add('sc');
+  document.getElementById('scan-icon').textContent='⏳';
+  document.getElementById('scan-title').textContent='Scanning...';
+  setTimeout(()=>{
+    box.classList.remove('sc');
+    document.getElementById('scan-icon').textContent='✅';
+    document.getElementById('scan-title').textContent='Done! ID type karo';
+    toast('📷','Photo upload ho gayi! Ab Question ID type karo.');
+  },1800);
+}
+function searchByID(){
+  const tid=document.getElementById('qid-inp').value.trim();
+  if(!tid){toast('⚠️','Question ID daalo');return;}
+  const all=Object.values(QDB).flat();
+  const found=all.find(q=>q.id.toLowerCase()===tid.toLowerCase());
+  if(!found){toast('❌','ID nahi mili. Check karo.');return;}
+  showScanResult(found);
+}
+function showScanResult(q){
+  const hasVid=VIDEO_LINKS[q.id];
+  document.getElementById('sr-qtxt').textContent=q.t;
+  document.getElementById('sr-vid').innerHTML=`
+    <div class="sr-vid-icon">${hasVid?'▶':'🎬'}</div>
+    <div><div style="font-size:.82rem;font-weight:600">${hasVid?'Video Available!':'Video Coming Soon'}</div>
+    <div style="font-size:.7rem;color:var(--m)">${hasVid?'<a href="'+hasVid+'" target="_blank" style="color:var(--g)">Video Link Kholो →</a>':'Hritik & Priyam upload karenge jald'}</div></div>`;
+  const qrWrap=document.getElementById('sr-qr-wrap');
+  qrWrap.innerHTML=`<div id="scan-qr-gen" style="background:#fff;padding:3px;border-radius:5px"></div>
+    <div><div style="font-size:.65rem;color:var(--c);font-weight:700;font-family:monospace">${q.id}</div>
+    <div style="font-size:.62rem;color:var(--m);margin-top:.15rem">QR scan → video link</div></div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('scan-qr-gen');
+    if(el) try{new QRCode(el,{text:VIDEO_LINKS[q.id]||`https://exambuddy.aktu.in/video/${q.id}`,width:52,height:52,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+  },100);
+  document.getElementById('scan-result').classList.add('a');
+  toast('✅','Question mila!');
+}
+
+// ── Login
+let lOTP='',lPhone='',lTmr=null;
+function phv(){const v=document.getElementById('ph').value;const ok=/^[6-9]\d{9}$/.test(v);document.getElementById('sndbtn').disabled=!ok;document.getElementById('pherr').classList.toggle('a',v.length===10&&!ok);}
+function sndotp(){const ph=document.getElementById('ph').value;if(!/^[6-9]\d{9}$/.test(ph))return;lPhone=ph;lOTP=String(Math.floor(100000+Math.random()*900000));toast('📱','Demo OTP: '+lOTP);document.getElementById('phdisp').textContent='+91 '+ph.replace(/(\d{5})(\d{5})/,'$1 $2');document.getElementById('ls1').classList.remove('a');document.getElementById('ls2').classList.add('a');document.querySelectorAll('#otpr input').forEach(i=>{i.value='';i.classList.remove('filled');});document.getElementById('vrbtn').disabled=true;document.getElementById('otperr').classList.remove('a');stmr();setTimeout(()=>document.querySelector('#otpr input').focus(),80);}
+function om(el,idx){el.value=el.value.replace(/\D/g,'');el.classList.toggle('filled',!!el.value);const bs=document.querySelectorAll('#otpr input');if(el.value&&idx<5)bs[idx+1].focus();document.getElementById('vrbtn').disabled=![...bs].every(b=>b.value);}
+function ob(e,idx){if(e.key==='Backspace'){const bs=document.querySelectorAll('#otpr input');if(!bs[idx].value&&idx>0){bs[idx-1].focus();bs[idx-1].value='';bs[idx-1].classList.remove('filled');}document.getElementById('vrbtn').disabled=true;}}
+function vrotp(){const bs=document.querySelectorAll('#otpr input');const ent=[...bs].map(b=>b.value).join('');if(ent===lOTP){clearInterval(lTmr);sessionStorage.setItem('ebU',lPhone);document.getElementById('ls2').classList.remove('a');document.getElementById('ls3').classList.add('a');}else{document.getElementById('otperr').classList.add('a');[...bs].forEach(i=>i.style.borderColor='#F87171');setTimeout(()=>{[...bs].forEach(i=>{i.value='';i.classList.remove('filled');i.style.borderColor='';});document.getElementById('vrbtn').disabled=true;document.querySelector('#otpr input').focus();},600);}}
+function lenter(){document.getElementById('loginPage').classList.add('hide');const u=sessionStorage.getItem('ebU');if(u)document.getElementById('navUser').textContent='+91 '+u.replace(/(\d{5})(\d{5})/,'$1 $2');}
+function lgoback(){document.getElementById('ls2').classList.remove('a');document.getElementById('ls1').classList.add('a');clearInterval(lTmr);}
+function resend(){if(document.getElementById('rsndbtn').classList.contains('dis'))return;lOTP=String(Math.floor(100000+Math.random()*900000));toast('📱','Naya OTP: '+lOTP);stmr();}
+function stmr(){let t=30;const btn=document.getElementById('rsndbtn');const tmr=document.getElementById('ltmr');btn.classList.add('dis');clearInterval(lTmr);lTmr=setInterval(()=>{tmr.textContent='('+t+'s)';t--;if(t<0){clearInterval(lTmr);btn.classList.remove('dis');tmr.textContent='';}},1000);}
+function toast(ic,mg){const t=document.getElementById('toast');document.getElementById('ti').textContent=ic+' ';document.getElementById('tm2').textContent=mg;t.classList.add('a');setTimeout(()=>t.classList.remove('a'),2800);}
+(()=>{const u=sessionStorage.getItem('ebU');if(u){document.getElementById('loginPage').classList.add('hide');document.getElementById('navUser').textContent='+91 '+u.replace(/(\d{5})(\d{5})/,'$1 $2');}rSubs();})();
+</script></body></html>
