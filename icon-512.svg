@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0533"/>
+      <stop offset="100%" style="stop-color:#0d1f3c"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6"/>
+      <stop offset="100%" style="stop-color:#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6C3CE1;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:0.1"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#8B5CF6" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Grid lines -->
+  <line x1="0" y1="128" x2="512" y2="128" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+  <line x1="0" y1="256" x2="512" y2="256" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+  <line x1="0" y1="384" x2="512" y2="384" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+  <line x1="128" y1="0" x2="128" y2="512" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+  <line x1="256" y1="0" x2="256" y2="512" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+  <line x1="384" y1="0" x2="384" y2="512" stroke="#8B5CF6" stroke-width="1" opacity="0.2"/>
+
+  <!-- Corner dots -->
+  <circle cx="72" cy="72" r="7" fill="#8B5CF6" opacity="0.5"/>
+  <circle cx="440" cy="72" r="7" fill="#06B6D4" opacity="0.5"/>
+  <circle cx="72" cy="440" r="7" fill="#06B6D4" opacity="0.5"/>
+  <circle cx="440" cy="440" r="7" fill="#8B5CF6" opacity="0.5"/>
+
+  <!-- Glow behind -->
+  <circle cx="256" cy="210" r="120" fill="url(#glow)"/>
+
+  <!-- Book -->
+  <rect x="164" y="110" width="184" height="200" rx="14" fill="none" stroke="url(#accent)" stroke-width="6" filter="url(#shadow)"/>
+  <rect x="164" y="110" width="92" height="200" rx="14" fill="#8B5CF6" opacity="0.12"/>
+  <line x1="256" y1="110" x2="256" y2="310" stroke="url(#accent)" stroke-width="5"/>
+
+  <!-- Page lines right side -->
+  <line x1="272" y1="162" x2="330" y2="162" stroke="#06B6D4" stroke-width="4" opacity="0.75"/>
+  <line x1="272" y1="188" x2="330" y2="188" stroke="#06B6D4" stroke-width="4" opacity="0.75"/>
+  <line x1="272" y1="214" x2="318" y2="214" stroke="#06B6D4" stroke-width="4" opacity="0.5"/>
+  <line x1="272" y1="240" x2="322" y2="240" stroke="#06B6D4" stroke-width="3" opacity="0.4"/>
+
+  <!-- Circuit on left side -->
+  <circle cx="210" cy="210" r="18" fill="none" stroke="#8B5CF6" stroke-width="4" opacity="0.85"/>
+  <circle cx="210" cy="210" r="7" fill="#8B5CF6"/>
+  <line x1="210" y1="155" x2="210" y2="192" stroke="#8B5CF6" stroke-width="3" opacity="0.6"/>
+  <line x1="210" y1="228" x2="210" y2="268" stroke="#8B5CF6" stroke-width="3" opacity="0.6"/>
+  <line x1="170" y1="210" x2="192" y2="210" stroke="#8B5CF6" stroke-width="3" opacity="0.6"/>
+  <line x1="228" y1="210" x2="248" y2="210" stroke="#8B5CF6" stroke-width="3" opacity="0.6"/>
+
+  <!-- EXAM BUDDY text -->
+  <text x="256" y="372" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="34" font-weight="900" letter-spacing="8" fill="url(#accent)">EXAM BUDDY</text>
+
+  <!-- Underline glow -->
+  <rect x="148" y="384" width="216" height="5" rx="2.5" fill="url(#accent)" opacity="0.65"/>
+
+  <!-- Small AKTU label -->
+  <text x="256" y="414" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="5" fill="#8B5CF6" opacity="0.6">AKTU</text>
+</svg>
